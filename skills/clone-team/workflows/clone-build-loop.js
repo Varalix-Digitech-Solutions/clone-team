@@ -4,6 +4,7 @@ export const meta = {
     'Autonomous, resumable website-clone loop. Enforces extract→spec→develop→full-regression-test→fix per section (the Tester gate cannot be skipped), runs a parallel backend-architecture documentation track, then assemble→final-regression→fix. Built for the clone-team skill.',
   phases: [
     { title: 'Spec & Build' },
+    { title: 'Motion' },
     { title: 'Regression' },
     { title: 'Backend Docs' },
     { title: 'Assemble & Final Regression' },
@@ -31,7 +32,7 @@ export const meta = {
 //        targetFile?, specPath?, status?    // 'done' => skip; 'built' => test-first re-validate (resume)
 //     }>,
 //     runConfig:   { modelTier, maxRounds, finalCap, backendDepth },
-//     personas:    { fe?, backend?, tester? } // optional overrides of the defaults below
+//     personas:    { fe?, backend?, tester?, motionAnalyst?, motionDev? } // optional overrides of the defaults below
 //     paths:       { research, components, designRefs } // doc output dirs
 //   }
 // Anything missing falls back to a sensible default so the workflow is also
@@ -85,9 +86,9 @@ const leanResources = !!cfg.leanResources
 
 // Model tier -> per-role model. Manager runs in the main thread (session model).
 const TIERS = {
-  'max-fidelity':   { dev: 'opus',   tester: 'opus',   backend: 'opus',   extract: 'sonnet' },
-  'cost-optimized': { dev: 'sonnet', tester: 'sonnet', backend: 'sonnet', extract: 'haiku' },
-  'ultra-cheap':    { dev: 'sonnet', tester: 'sonnet', backend: 'sonnet', extract: 'haiku' },
+  'max-fidelity':   { dev: 'opus',   tester: 'opus',   backend: 'opus',   extract: 'sonnet', motion: 'opus'   },
+  'cost-optimized': { dev: 'sonnet', tester: 'sonnet', backend: 'sonnet', extract: 'haiku',  motion: 'sonnet' },
+  'ultra-cheap':    { dev: 'sonnet', tester: 'sonnet', backend: 'sonnet', extract: 'haiku',  motion: 'sonnet' },
 }
 const M = TIERS[cfg.modelTier] || TIERS['max-fidelity']
 
@@ -112,13 +113,21 @@ if (sections.length === 0) {
 // --- Role capsules (defaults; the canonical full versions live in agents/*.md
 // and the Manager may override these via args.personas) ---------------------
 
+const skillDirHint = A.skillDir ? ` (at \`${A.skillDir}/references/motion-playbook.md\`)` : ''
+
 const UIPACK = `Before doing ANY work, try to load the \`ui-pack\` skill (it bundles clone-website, agent-browser, ui-ux-pro-max, impeccable, emil-design-eng). If \`ui-pack\` is NOT installed on this machine, DEGRADE GRACEFULLY — do not abort: use the \`agent-browser\` CLI directly (run \`agent-browser skills get core --full\` once for its command guide), plus whichever of \`emil-design-eng\` / \`ui-ux-pro-max\` are installed, and this skill's extraction-playbook reference for the extraction scripts + spec template. Either way you MUST drive and verify the real UI through agent-browser — never guess what the page looks like.`
+
+const UIANIM = `Also try to load the \`ui-animation\` skill (motion craft: CSS transitions vs keyframes vs spring physics, easing/timing, clip-path reveals, gestures/drag, performance rules, review format). If it is NOT installed, DEGRADE GRACEFULLY — read this skill's \`references/motion-playbook.md\`${skillDirHint}, which carries the same motion taxonomy, the state-matrix + motion-token templates, the performance rules, and the drive-to-verify recipe. Motion craft rules: prefer transform/opacity, NEVER animate layout props (width/height/top/left) or use \`transition: all\`, keep filter animations modest, and respect \`prefers-reduced-motion: reduce\`.`
 
 const FE_PERSONA = A.personas?.fe || `You are the FRONTEND DEVELOPER on a website-cloning team: a veteran frontend + UX engineer, the team's build machine. ${UIPACK} You build pixel-perfect, behavior-accurate clones from a spec, extracting EXACT getComputedStyle values, real text, real downloaded assets, and every interaction state. You may spawn your own sub-builder agents for complex sections. You NEVER guess a value the spec should contain — if the spec is missing something, extract it from the live site yourself. You make the build and typecheck pass before reporting. You report back with full, honest notes (including anything you couldn't verify) so the Manager and Tester have complete context.`
 
 const TESTER_PERSONA = A.personas?.tester || `You are the TESTER on a website-cloning team — the most important quality gate, an expert in testing methodology AND UX. ${UIPACK} You receive the goal and full context and you know exactly what the delivery must contain. You run a FULL REGRESSION every round, not a spot check: side-by-side visual diff against the ORIGINAL at 1440/768/390 via agent-browser, every interactive behavior (scroll/click/hover/time/responsive), and build/type checks. CRITICAL — you DO NOT stop at the first bug. Finish the ENTIRE regression in one pass and ACCUMULATE every defect you find (visual at all three viewports, every interaction/state, responsive reflow, content/asset mismatches, build/type errors). Never short-circuit and report a single issue back early — that wastes a whole expensive round; the Developer needs the COMPLETE punch list so they can fix everything at once. Note each issue as you go and keep testing. No bug, requirement mismatch, or undesirable UX detail escapes you. Only after the full sweep do you return a strict verdict: OK only if it is an exact copy with ZERO issues; otherwise NG with the FULL list of SPECIFIC, REPRODUCIBLE issues (where, expected vs actual, how to reproduce, screenshot ref), ordered by severity, that the Developer can act on directly.`
 
 const BACKEND_PERSONA = A.personas?.backend || `You are the BACKEND ARCHITECT on a website-cloning team: a powerhouse in backend architecture with deep domain reasoning. ${UIPACK} You also use clean-code discipline. Your deliverable is DOCUMENTATION, not a running backend: you reverse-engineer and clearly document how the target system is structured and how its flows work — observed network/API surface, inferred data model and entities, auth/session flow, state and navigation, and the end-to-end user journeys — to the requested depth. You write it as a well-structured, auditable document a fresh team could build from.`
+
+const MOTION_ANALYST_PERSONA = A.personas?.motionAnalyst || `You are the INTERACTION & MOTION ANALYST on a website-cloning team — a motion-design specialist whose SOLE job is to ensure NO animation and NO interaction state is ever missed. ${UIPACK} ${UIANIM} You do NOT build; you OBSERVE the live original exhaustively and author a MOTION SPEC: (1) a STATE MATRIX for every interactive element (default/hover/focus/active/loading/disabled/empty/error — what changes, with duration + easing); (2) a complete ANIMATED-ELEMENT INVENTORY, each entry classified — load-intro, one-shot-entrance, scroll-scrubbed, hover-focus, click-tap, time-loop, or continuous-decorative (shimmer, particles, grain, gradient-drift, canvas/WebGL, marquee, looping video); (3) a MOTION-TOKEN layer (durations, easings, distances, stagger) so motion is consistent; (4) reduced-motion + keyboard-flow notes. You catch the SUBTLE things the layout-focused extractor skips: micro-hover feedback, keyboard focus rings, and decorative/generative ("glittery") motion — that is fidelity, not garnish. You DRIVE everything in agent-browser to confirm it: COLD hard-reload for intro; hover + keyboard-Tab-focus + click every interactive element; scroll in increments and WAIT >=600ms for async (IntersectionObserver/Lenis/GSAP) motion to fire before reading. You never guess — if you cannot observe a state, record it as an explicit unknown.`
+
+const MOTION_DEV_PERSONA = A.personas?.motionDev || `You are the MOTION DEVELOPER on a website-cloning team — an animation engineer who runs a SEQUENTIAL polish pass AFTER the Frontend Developer has built the page. ${UIPACK} ${UIANIM} You edit the SAME page file the FE Developer produced, but you touch ONLY motion: add/repair every entry in the MOTION SPEC that the build left static or wrong, while preserving the FE Developer's layout, structure, content, colors, and asset paths EXACTLY (if a change alters the static at-rest rendering, you have overstepped — flag layout/content fixes for the Manager instead). You implement the full taxonomy: load-intro curtains, one-shot entrances, scroll-scrubbed text/element reveals (split text into .line/.word/.char yourself when needed and match the per-element trajectory AND the scroll DISTANCE/pin length), hover/focus/active/loading states, click feedback, time/loop, and continuous-decorative (shimmer/particles/grain/canvas/marquee). Apply the motion tokens consistently; gate non-essential motion behind prefers-reduced-motion; keep keyboard focus visible. You DRIVE each behavior in agent-browser to confirm it fires with the right trajectory + cadence + distance, and you keep build + typecheck GREEN (motion must still work when the page is SERVED, not file://). Report exactly which motion you added/fixed and anything you could not reproduce.`
 
 // --- Structured output schemas ---------------------------------------------
 
@@ -187,6 +196,25 @@ const DOC_SCHEMA = {
   },
 }
 
+const MOTION_SCHEMA = {
+  type: 'object', additionalProperties: false,
+  required: ['motionPath', 'inventoryCount', 'ready'],
+  properties: {
+    motionPath: { type: 'string', description: 'path to the written .motion.md spec' },
+    stateMatrixElements: { type: 'integer', description: 'count of interactive elements given a state matrix' },
+    inventoryCount: { type: 'integer', description: 'count of animated elements enumerated' },
+    classesPresent: {
+      type: 'array',
+      items: { type: 'string', enum: ['load-intro', 'one-shot-entrance', 'scroll-scrubbed', 'hover-focus', 'click-tap', 'time-loop', 'continuous-decorative'] },
+      description: 'which motion classes were actually observed on the original — tells the Tester what to verify',
+    },
+    tokensDefined: { type: 'boolean' },
+    reducedMotionNoted: { type: 'boolean' },
+    ready: { type: 'boolean', description: 'true only if every behavior can be built from this spec with ZERO guessing' },
+    notes: { type: 'string' },
+  },
+}
+
 // --- Prompt builders --------------------------------------------------------
 
 const skillDir = A.skillDir || '' // absolute path to the clone-team skill repo (for references/extraction-playbook.md etc.)
@@ -221,13 +249,38 @@ BUILD IT AS A STANDALONE, SELF-CONSISTENT ARTIFACT — it must be correct on the
 ${verdict && verdict.verdict === 'NG' ? `\n## This is a FIX round. The Tester returned NG. Address EVERY issue below, with full context of what you built last round:\n### Your previous notes\n${lastBuild?.devNotes || lastBuild?.summary || '(none)'}\n### Tester issues to fix\n${(verdict.issues || []).map((i, n) => `${n + 1}. [${i.severity}] ${i.area}: ${i.description}\n   expected: ${i.expected}\n   actual: ${i.actual}${i.repro ? `\n   repro: ${i.repro}` : ''}`).join('\n')}\n` : ''}
 Return the structured build result with honest devNotes.`
 
+const motionPathFor = (s) => `${components}/${(s.name || 'section').replace(/[^a-z0-9-]/gi, '-').toLowerCase()}.motion.md`
+
+const motionAnalysisPrompt = (s, spec) => `${MOTION_ANALYST_PERSONA}
+
+${CONTEXT}
+
+## Task: author the MOTION SPEC for "${s.name}" — so NOTHING animated is missed
+You are NOT building. Open the live original with agent-browser and exhaustively catalogue its motion + interaction states, then WRITE the spec to \`${motionPathFor(s)}\`. Use ${skillDir ? skillDir + '/references/motion-playbook.md' : "this skill's references/motion-playbook.md"} for the templates + taxonomy. Cover, with EXACT observed (driven, never guessed) values:
+- LOAD / INTRO first: COLD hard-reload and sample the first ~0–2.5s for any preloader / curtain / splash / page-transition overlay (color, structure, duration, exit). A warm browser has already finished it — you WILL miss it without a cold reload.
+- STATE MATRIX: for EVERY interactive element (links, buttons, inputs, cards, tabs, accordions, nav, menus) record default/hover/focus/active/loading/disabled/empty/error — what changes + duration/easing. Trigger each: hover, focus via keyboard Tab, click.
+- ANIMATED-ELEMENT INVENTORY: enumerate EVERY element that moves and classify each (load-intro / one-shot-entrance / scroll-scrubbed / hover-focus / click-tap / time-loop / continuous-decorative). Scroll in small increments and WAIT >=600ms for async motion to fire before reading. Deliberately hunt the SUBTLE + DECORATIVE: micro-hover shifts, focus rings, and "glittery" continuous motion — shimmer, particles, grain, gradient drift, canvas/WebGL, marquees, looping video. For scroll-scrubbed reveals note split granularity (.line/.word/.char) and the scrollY band + DISTANCE (viewport-heights of pin).
+- MOTION TOKENS: distill recurring durations, easings, distances, stagger into a small token set.
+- reduced-motion + keyboard-flow notes.
+Reference the FE spec at \`${spec?.specPath || ''}\` for element names. Return the structured result, listing in classesPresent every motion class you actually observed.`
+
+const motionDevPrompt = (s, spec, motion, verdict, lastBuild) => `${MOTION_DEV_PERSONA}
+
+${CONTEXT}
+
+## Task: MOTION polish pass on "${s.name}"${s.targetFile ? ` in \`${s.targetFile}\`` : ''} (sequential — AFTER the FE build, BEFORE the gate)
+The Frontend Developer has just built/updated this page file. Read the MOTION SPEC at \`${motion?.motionPath || motionPathFor(s)}\` and the FE spec at \`${spec?.specPath || ''}\`, then implement EVERY motion + interaction-state entry the current build is missing or has wrong — WITHOUT changing layout, structure, content, colors, or assets (those are the FE Developer's Tester-approved scope; you ONLY add/repair motion). Wire load-intro curtains, entrances, scroll-scrubbed reveals (split text nodes yourself when needed; match per-element trajectory AND scroll DISTANCE), hover/focus/active/loading states, click feedback, time/loop, and continuous-decorative (shimmer/particles/grain/canvas/marquee). Apply the motion tokens consistently; gate non-essential motion behind \`prefers-reduced-motion: reduce\`; keep keyboard focus visible. DRIVE each behavior in agent-browser and confirm it fires with the right trajectory + cadence + scroll distance. Keep build + typecheck GREEN, and confirm motion still works when the page is SERVED (not file://).
+${verdict && verdict.verdict === 'NG' ? `\n## Fix round — the Tester returned NG. Own the MOTION/INTERACTION issues below (leave pure layout/content/color issues to the FE Developer):\n${(verdict.issues || []).map((i, n) => `${n + 1}. [${i.severity}] ${i.area}: ${i.description} (expected: ${i.expected}; actual: ${i.actual})`).join('\n')}\n` : ''}
+Return the structured build result: filesWritten, buildPasses, typecheckPasses, and devNotes listing exactly which motion you added/fixed (by inventory entry) and anything you could not reproduce.`
+
 const testPrompt = (s, spec, build) => `${TESTER_PERSONA}
 
 ${CONTEXT}
 
 ## Task: FULL REGRESSION of section "${s.name}" — gate before it can ship
 The Developer reports: ${build?.summary || '(no summary)'} — files: ${(build?.filesWritten || []).join(', ') || '(none)'}.
-Reference spec: \`${spec?.specPath || ''}\`.
+Reference spec: \`${spec?.specPath || ''}\`. MOTION spec (the animated-element inventory + state matrix authored by the Motion Analyst, then built by the Motion Developer): \`${motionPathFor(s)}\`.
+CROSS-CHECK THE MOTION SPEC: every element it inventories MUST animate in the clone — right text/section rendered STATIC where the original animates it is an NG; every state-matrix entry (hover, keyboard focus, active, loading, disabled) must match; and scroll-scrubbed + continuous-decorative ("glittery" shimmer/particles/grain/canvas) motion must be DRIVEN to confirm it fires (a still frame can't prove it). Check the load-intro with a COLD reload.
 Run the full regression: open the ORIGINAL and the CLONE side by side via agent-browser at 1440/768/390; diff visually pixel by pixel. For EVERY scroll-/time-/hover-/click-driven behavior, DRIVE it and diff the STATE TRAJECTORY against the original — a static screenshot cannot prove motion (a frozen page looks identical in a still frame). Scroll in increments and read the animated state (transform/height/opacity/active-index/visible image) at each step on both; confirm scrolling actually TRIGGERS the change (image cycling, shape morph, elements animating in from below), with matching trigger thresholds, direction, and easing/cadence — missing or frozen animation is an NG. Confirm build + typecheck pass AND the page runs as SHIPPED (serve a clean copy / static server — a page that needs an uncommitted build artifact or breaks when copied is an NG). Do not rubber-stamp — you are the gate. Return verdict OK only if it is an exact copy; otherwise NG with specific, reproducible issues the Developer can fix directly.
 ${statePath ? `\n## DURABLE CHECKPOINT (mandatory on OK — do this BEFORE you return)\nThe moment your verdict is OK, run exactly:\n\`node ${statePath} mark-section --dir ${projectDir} --name "${s.name}" --status done --rounds ${'<the round number you approved>'}\`\nThis writes the durable \`done\` marker so a crash or usage-cutoff resumes without redoing this approved section. NEVER run it on NG. This is the single thing that makes the run survivable — do not skip it.\n` : ''}`
 
@@ -273,6 +326,14 @@ async function buildAndVerify(section, idx) {
     spec = await agent(specPrompt(section), { label: `spec:${section.name}`, phase: 'Spec & Build', schema: SPEC_SCHEMA, model: M.extract })
   }
 
+  // Step 1.5: MOTION ANALYSIS — author the motion spec ONCE per section (the
+  // state matrix + animated-element inventory the Motion Developer builds from
+  // and the Tester gates against). Resumable: skip if the Manager pre-wrote one.
+  let motion = section.motionPath ? { motionPath: section.motionPath } : null
+  if (!motion) {
+    motion = await agent(motionAnalysisPrompt(section, spec), { label: `motion-analyze:${section.name}`, phase: 'Motion', schema: MOTION_SCHEMA, model: M.motion })
+  }
+
   let round = 0, verdict = null, lastBuild = null
 
   // RE-VALIDATE PATH (status 'built'): a section whose targetFile already exists
@@ -297,6 +358,11 @@ async function buildAndVerify(section, idx) {
   while (round < maxRounds) {
     round++
     lastBuild = await agent(devPrompt(section, spec, verdict, lastBuild), { label: `dev:${section.name}#${round}`, phase: 'Spec & Build', schema: BUILD_SCHEMA, model: M.dev })
+    // MOTION pass: a sequential specialist edit of the SAME file, right after the
+    // FE build and BEFORE the gate — so motion is always the last writer and
+    // survives FE fix rounds (the FE dev may rebuild structure each round; the
+    // Motion Developer re-applies/repairs motion on top every time).
+    await agent(motionDevPrompt(section, spec, motion, verdict, lastBuild), { label: `motion-dev:${section.name}#${round}`, phase: 'Motion', schema: BUILD_SCHEMA, model: M.motion })
     verdict = await agent(testPrompt(section, spec, lastBuild), { label: `test:${section.name}#${round}`, phase: 'Regression', schema: VERDICT_SCHEMA, model: M.tester })
     if (verdict.verdict === 'OK') {
       log(`OK ${section.name} (round ${round})`)

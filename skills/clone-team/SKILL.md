@@ -19,7 +19,7 @@ user-invocable: true
 
 # Clone Team — Orchestrated, Resumable Website Cloning
 
-You are the **Manager** of a four-person agent team. Your job is to deliver two
+You are the **Manager** of an agent team. Your job is to deliver two
 things for the target website, to a quality bar of *exact copy*:
 
 1. **A pixel-perfect, behavior-accurate UI clone** in the stack the user wants.
@@ -46,16 +46,22 @@ both.
 |------|--------------|---------------|--------------|
 | **Manager (you)** | Veteran UI/UX lead. Holds the `/goal`, full context, final gate. | Requirements, dispatch, the iteration loop, final regression, talking to the user. | — (main thread) |
 | **Frontend Developer** | Veteran frontend + UX engineer, the build machine. | Exploring the site, extracting it, and building the pixel-perfect clone. May spawn its own sub-builders. | `agents/frontend-developer.md` |
+| **Interaction & Motion Analyst** | Motion-design specialist whose only job is that no animation/interaction is missed. | Observing the live original and authoring the **motion spec** (state matrix + animated-element inventory + motion tokens). | `agents/interaction-motion-analyst.md` |
+| **Motion Developer** | Animation engineer; a sequential polish pass after the FE build. | Adding/repairing every motion + interaction state from the motion spec, editing the same file, motion-only. | `agents/motion-developer.md` |
 | **Backend Architect** | Backend powerhouse with deep domain reasoning. | Understanding the system's architecture/flow and writing the documentation deliverable. Uses clean-code thinking. | `agents/backend-architect.md` |
-| **Tester** | The most important gate. Expert in testing + UX, misses nothing. | Full regression of every delivery against the goal. Returns OK / NG with specific, actionable issues. | `agents/tester.md` |
+| **Tester** | The most important gate. Expert in testing + UX, misses nothing. | Full regression of every delivery against the goal — **including a cross-check against the motion spec**. Returns OK / NG with specific, actionable issues. | `agents/tester.md` |
 
 **Every agent loads `ui-pack` before doing any work** — that pulls in
 `clone-website`, `agent-browser`, `ui-ux-pro-max`, `impeccable`, and
 `emil-design-eng`. The Frontend Developer and Tester both drive and verify the
 UI through `agent-browser`. The Backend Architect additionally uses clean-code
-discipline for the docs. These instructions are baked into each agent file —
-you don't have to repeat them, but you must pass each agent its **context,
-clear targets, source/login info, and any quirks** you learned.
+discipline for the docs. **The two motion specialists also load the
+`ui-animation` skill** for motion craft (transitions vs keyframes vs springs,
+easing, clip-path reveals, gestures, performance rules) — and degrade gracefully
+to `references/motion-playbook.md` when it isn't installed. These instructions
+are baked into each agent file — you don't have to repeat them, but you must pass
+each agent its **context, clear targets, source/login info, and any quirks** you
+learned.
 
 > **If `ui-pack` is not installed** on the host, the skill still works: each
 > persona degrades to the `agent-browser` CLI directly (it ships its own usage
@@ -216,22 +222,41 @@ The loop, **per page** (pages build in parallel; a single-page site is one item)
 1. **Extract → spec.** A focused extraction of the whole page produces a spec in
    `docs/research/components/<name>.spec.md` (the contract — covers every part of
    the page).
-2. **Developer builds the ENTIRE page** from the spec into one coherent file (and,
+2. **Motion analysis → motion spec.** The **Interaction & Motion Analyst** observes
+   the live original and writes `docs/research/components/<name>.motion.md`: a
+   state matrix for every interactive element, a complete animated-element
+   inventory (load-intro, entrances, scroll-scrubbed, hover/focus, click, time/
+   loop, and **continuous-decorative** — shimmer/particles/grain/canvas), a
+   motion-token layer, and reduced-motion/keyboard notes. This runs once per page
+   and is the artifact the Tester gates against — it's how subtle hover/focus and
+   "glittery" decorative motion stop slipping through.
+3. **Developer builds the ENTIRE page** from the spec into one coherent file (and,
    on later rounds, from the Tester's exact issues + its own prior notes — *full
    context every time*). It holds the whole page at once, so backgrounds, text
    colors, asset paths, and spacing are consistent end-to-end.
-3. **Tester runs a full regression** of the whole page against the goal: visual
+4. **Motion pass.** The **Motion Developer** runs a sequential pass over the same
+   file, adding/repairing every entry in the motion spec the build left static or
+   wrong — motion only, never touching layout/content/assets. It runs after the FE
+   build every round, so motion is always the last writer and survives FE fix
+   rounds.
+5. **Tester runs a full regression** of the whole page against the goal: visual
    diff vs. the original at 1440/768/390 via `agent-browser`, every interactive
-   behavior, build/type checks. Returns **OK** or **NG with specific, reproducible
-   issues**.
-4. **If NG**, the loop hands the exact issues back to the Developer with full
-   context and re-builds. Repeat until OK or the round cap is hit (then the page
-   is flagged for your attention).
+   behavior, build/type checks, **and a cross-check against the motion spec**
+   (every inventory entry must actually animate; static-where-the-original-moves
+   is an NG). Returns **OK** or **NG with specific, reproducible issues**.
+6. **If NG**, the loop hands the exact issues back: layout/content to the
+   Developer, motion/interaction to the Motion Developer — with full context — and
+   re-builds. Repeat until OK or the round cap is hit (then the page is flagged for
+   your attention).
 
 Launch it with the `Workflow` tool, passing `state.json`'s requirements +
-section list + run-config as `args`. Run the **Backend Architect track in
-parallel** with the section loop. The Developer may spawn its own sub-builders
-for complex sections — that's expected and good.
+section list + run-config as `args`. Personas are single-sourced: read the five
+agent files (`frontend-developer`, `interaction-motion-analyst`,
+`motion-developer`, `backend-architect`, `tester`) and pass them in
+`args.personas.{fe, motionAnalyst, motionDev, backend, tester}` so the engine
+runs the canonical text (it embeds tight capsules as a fallback). Run the
+**Backend Architect track in parallel** with the section loop. The Developer may
+spawn its own sub-builders for complex sections — that's expected and good.
 
 **Before launching, size the wave to the host.** Run `node scripts/capacity.mjs
 --wave` and pass the number as `runConfig.waveSize` (with `skipAssembly: true` so
@@ -310,7 +335,12 @@ and the final `state.json` location so the run is auditable and re-openable.
   **Read before Phase 0** (you write state from the very first answers).
 - `references/extraction-playbook.md` — the exact recon/extraction scripts and
   spec-file template (condensed from `clone-website`).
+- `references/motion-playbook.md` — the motion taxonomy, state-matrix + motion-
+  token templates, craft + performance rules, and the drive-to-verify recipe.
+  Self-contained fallback when `ui-animation` isn't installed. **Read before the
+  motion track.**
 - `references/backend-doc-template.md` — the structure of the documentation
   deliverable the Backend Architect produces.
-- `agents/frontend-developer.md`, `agents/backend-architect.md`,
-  `agents/tester.md` — the spawn prompts for the three agents.
+- `agents/frontend-developer.md`, `agents/interaction-motion-analyst.md`,
+  `agents/motion-developer.md`, `agents/backend-architect.md`, `agents/tester.md`
+  — the spawn prompts for the five agents.

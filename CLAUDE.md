@@ -40,6 +40,8 @@ division is deliberate:
 SKILL.md                          # the Manager playbook (entry point)
 agents/
   frontend-developer.md           # builder persona (canonical)
+  interaction-motion-analyst.md   # motion-spec author (canonical)
+  motion-developer.md             # sequential motion polish pass (canonical)
   tester.md                       # the gate persona (canonical)
   backend-architect.md            # docs persona (canonical)
 workflows/
@@ -48,6 +50,7 @@ references/
   orchestration.md                # team model + how to launch/steer the Workflow
   state-and-resume.md             # state.json schema, creds pattern, pause/resume/recovery
   extraction-playbook.md          # recon/extraction scripts + spec template
+  motion-playbook.md              # motion taxonomy, state-matrix/token templates, drive-to-verify recipe
   backend-doc-template.md         # ARCHITECTURE.md structure
 scripts/
   state.mjs                       # durable state CLI (init/status/mark-section/remaining/…)
@@ -62,13 +65,23 @@ evals/
 
 - **Single source of truth for personas.** The canonical personas are in
   `agents/*.md`. The Workflow embeds tight capsules of the same text but accepts
-  `args.personas.{fe,backend,tester}` overrides — the Manager reads the agent
-  files and passes them in, so there's one source. If you edit a persona, edit
-  the `agents/*.md` file.
+  `args.personas.{fe,motionAnalyst,motionDev,backend,tester}` overrides — the
+  Manager reads the agent files and passes them in, so there's one source. If you
+  edit a persona, edit the `agents/*.md` file.
 - **Every agent loads `ui-pack` first** and verifies via `agent-browser`. This is
   baked into every persona; keep it there.
 - **Two gates, never one:** Tester (in the loop) then Manager (final). Approved
   work only.
+- **The motion track is additive and ordered — don't collapse it.** A dedicated
+  Motion Analyst authors the per-page motion spec (`<page>.motion.md`: state
+  matrix + animated-element inventory incl. `continuous-decorative` + tokens), and
+  a Motion Developer runs a sequential pass **after the FE build, before the gate**
+  every round (motion is always the last writer, so it survives FE fix rounds). It
+  exists because the layout pass treats motion as binary "does it animate" and
+  drops subtle hover/focus + decorative motion. The Motion Developer edits the FE
+  dev's file **motion-only** (never relayout/recolor/recontent). Don't fold these
+  back into the FE persona or make the analyst optional — that reintroduces the
+  exact misses (intro curtains, scroll-scrubbed text, shimmer/particles) it fixes.
 - **Resumability rests on disk.** A section is `done` only when Tester-approved
   AND its `targetFile` exists. `state.mjs remaining` reconciles state with disk —
   that reconciliation is what makes cutoffs survivable. Don't add a code path

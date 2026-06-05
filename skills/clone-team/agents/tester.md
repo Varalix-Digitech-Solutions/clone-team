@@ -70,8 +70,13 @@ For a **section** delivery, regress:
      through it** is scroll-SCRUBBED, not a one-shot entrance. Drive it: scroll in
      increments across the block and confirm each line/word/char changes state with
      scroll progress (not all-at-once, not static). Cross-check the **animated-
-     element inventory** from the spec — every element the original animates must
-     animate in the clone; one rendered static (right text, no motion) is an NG.
+     element inventory and state matrix** in the **motion spec**
+     (`docs/research/components/<page>.motion.md`, authored by the Interaction &
+     Motion Analyst) — every element it lists must animate in the clone, every
+     state-matrix entry (hover, keyboard focus, active, loading, disabled) must
+     match, and **continuous-decorative** motion (shimmer/particles/grain/canvas/
+     marquee) must be DRIVEN to confirm; one element rendered static where the
+     original animates it (right text, no motion) is an NG.
    - **Scroll-driven:** scroll in small increments through the element's active
      range on BOTH original and clone, and at each step read the animated state
      (the element's `transform`/`translateY`, `height`, `opacity`, the active

@@ -13,8 +13,9 @@ after a fix. That is the failure this skill exists to prevent.
 
 So the loop is expressed as a **deterministic `Workflow` script**
 (`workflows/clone-build-loop.js`). The script *is* the process. It runs
-`extract → spec → develop → full-regression-test → fix → re-test …` as control
-flow, so the steps cannot be reordered or skipped by anyone — not the Manager,
+`extract → spec → motion-analyze → develop → motion-pass → full-regression-test →
+fix → re-test …` as control flow, so the steps cannot be reordered or skipped by
+anyone — not the Manager,
 not a developer agent, not the model having an off day. The Tester gate is a
 `while` loop condition, not a suggestion.
 
@@ -27,7 +28,7 @@ Workflow, the human final regression, and the resume decisions.
 > sign-off in checkpoint mode) happens in the Manager's phases; the autonomous
 > grind happens in the Workflow.
 
-## The five-actor model
+## The actor model
 
 ```
                          ┌─────────────────────────────┐
@@ -43,8 +44,10 @@ Workflow, the human final regression, and the resume decisions.
               per section, parallel │           │ in parallel
         ┌──────────────────────────▼──┐   ┌────▼──────────────────┐
         │ extract→spec (extract model)│   │ BACKEND ARCHITECT     │
-        │ FRONTEND DEVELOPER builds   │   │ writes ARCHITECTURE.md │
-        │ TESTER full-regression gate │   └───────────────────────┘
+        │ MOTION ANALYST → motion spec│   │ writes ARCHITECTURE.md │
+        │ FRONTEND DEVELOPER builds   │   └───────────────────────┘
+        │ MOTION DEVELOPER polish pass│
+        │ TESTER full-regression gate │
         │   ↑ NG ──── fix ────┐       │
         │   └── OK ──► done   │       │
         └─────────────────────┴───────┘
@@ -52,11 +55,13 @@ Workflow, the human final regression, and the resume decisions.
 ```
 
 - **Manager** = main thread. Full autonomy, only one who talks to the user.
-- **Frontend Developer**, **Tester**, **Backend Architect** = agents the Workflow
-  spawns via `agent()`. Their canonical personas are in `agents/*.md`; the
-  Workflow embeds tight capsules of the same personas (overridable via
-  `args.personas` so the Manager can pass the full files as the single source of
-  truth).
+- **Frontend Developer**, **Interaction & Motion Analyst**, **Motion Developer**,
+  **Tester**, **Backend Architect** = agents the Workflow spawns via `agent()`.
+  Their canonical personas are in `agents/*.md`; the Workflow embeds tight capsules
+  of the same personas (overridable via `args.personas` so the Manager can pass the
+  full files as the single source of truth). The Motion Analyst runs once per page
+  (after the spec); the Motion Developer runs every round, right after the FE build
+  and before the gate, so motion is always the last writer.
 - Each agent **loads `ui-pack` first** and drives the real UI through
   `agent-browser`. This is baked into every persona.
 
@@ -65,8 +70,9 @@ Workflow, the human final regression, and the resume decisions.
 1. Finish Phase 0 + Phase 1 so `state.json` has: goal, target(s), stack, creds
    file path, login quirks, app insights, the **section list**, run-config, and
    the doc-output paths.
-2. Read the three `agents/*.md` files and pass their bodies as
-   `args.personas.{fe,backend,tester}` — single source of truth, no drift.
+2. Read the five `agents/*.md` files and pass their bodies as
+   `args.personas.{fe,motionAnalyst,motionDev,backend,tester}` — single source of
+   truth, no drift.
 3. Call the `Workflow` tool with `{ scriptPath: "<skill>/workflows/clone-build-loop.js", args: <the object above> }`.
    - Pass `args` as a **real JSON object**. The engine is hardened to also accept
      a **JSON string** (it `JSON.parse`s a string payload) — but never assume:
@@ -115,11 +121,15 @@ Workflow, the human final regression, and the resume decisions.
 The Manager runs in the session model (Opus by default). The Workflow maps the
 chosen tier to per-role models:
 
-| Tier | Developer | Tester | Backend | Extraction |
-|------|-----------|--------|---------|------------|
-| `max-fidelity` (default) | opus | opus | opus | sonnet |
-| `cost-optimized` | sonnet | sonnet | sonnet | haiku |
-| `ultra-cheap` | sonnet | sonnet | sonnet | haiku |
+| Tier | Developer | Tester | Backend | Extraction | Motion |
+|------|-----------|--------|---------|------------|--------|
+| `max-fidelity` (default) | opus | opus | opus | sonnet | opus |
+| `cost-optimized` | sonnet | sonnet | sonnet | haiku | sonnet |
+| `ultra-cheap` | sonnet | sonnet | sonnet | haiku | sonnet |
+
+The **Motion** column covers both the Interaction & Motion Analyst and the Motion
+Developer — motion fidelity is subtle, so it tracks the build/test tier, not the
+cheaper extraction tier.
 
 Always let the **user choose** at Phase 0 (default to `max-fidelity` / Opus, per
 the original intent), because cost tolerance differs per user — especially once

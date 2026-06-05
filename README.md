@@ -124,6 +124,7 @@ clone-team stands on these companion skills (install alongside it):
 - **`clone-website`** — extraction + builder dispatch
 - **`agent-browser`** — real-browser automation for building *and* verifying
 - **`ui-ux-pro-max`**, **`impeccable`**, **`emil-design-eng`** — design intelligence + polish
+- **`ui-animation`** — motion craft (transitions/keyframes/springs, easing, clip-path reveals, gestures, performance) for the motion specialists; degrades gracefully if absent
 
 ## 🛡️ Responsible use
 
@@ -136,3 +137,7 @@ Issues and PRs welcome — better extraction scripts, new stack templates, sharp
 ## License
 
 [MIT](./LICENSE).
+
+## 🙏 Thanks
+
+Built on the shoulders of `ui-pack`, `clone-website`, `agent-browser`, `ui-ux-pro-max`, `impeccable`, `emil-design-eng`, and [`ui-animation`](https://awesomeskill.ai/skill/mblode-agent-skills-ui-animation) — and scaffolded with `skill-creator`. Grateful to every author; this skill wouldn't exist without yours. 🫶
