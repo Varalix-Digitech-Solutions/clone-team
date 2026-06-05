@@ -1,0 +1,23 @@
+{
+  "skill_name": "clone-team",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I need a pixel-perfect clone of https://linear.app — the marketing homepage. Build it in Next.js. I also want a doc explaining how the site is put together (routes, what data it loads, how the nav works) because we're going to build our own product site afterward. It's a big page so do it properly, section by section, and test each part against the original.",
+      "expected_output": "Manager gathers requirements (confirms stack=Next.js, scope=homepage, backend-depth), runs recon + foundation, launches the enforced build/test Workflow per section, runs the Backend Architect for ARCHITECTURE.md, produces a pixel-perfect clone + docs, and reports with a resumable state.json.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Clone our competitor's dashboard at https://app.example-analytics.com — I have a login (creds in a sec). I want it rebuilt in Vue 3. Use the cheap models where you can, I'm watching my usage. And I might have to stop partway and come back tomorrow, so make sure I can pause and resume.",
+      "expected_output": "Manager handles the login flow securely (creds in gitignored file, path passed to agents), confirms stack=Vue 3 and cost-optimized tier, sets up state.json for pause/resume, and explains the /clone-pause + /clone-resume + cross-session recovery path before/while running.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "continue",
+      "expected_output": "Treated as a resume: Manager reads .clone-team/state.json, reconciles section status with disk (done sections kept, half-built ones reset to pending), relaunches the Workflow on only the remaining sections (or via resumeFromRunId if same session), and reports what's left — without redoing finished work.",
+      "files": [".clone-team/state.json (mid-run, some sections done, some pending)"]
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+# --- Credentials: NEVER commit (the skill keeps creds in a gitignored local file) ---
+**/creds.local.json
+**/.clone-team/creds.local.json
+.env
+.env.*
+
+# --- Clone outputs / scratch (these belong to the projects you clone INTO) ---
+output/
+output-*/
+*-output/
+clone-team-workspace/
+**/with_skill/
+**/without_skill/
+**/old_skill/
+
+# --- Local Claude Code session/config artifacts (never publish) ---
+.claude/
+claude-session/
+*.jsonl
+
+# --- Build artifacts / dependencies (regenerable) ---
+node_modules/
+.next/
+dist/
+build/
+out/
+.svelte-kit/
+.vite/
+
+# --- OS / editor noise ---
+.DS_Store
+Thumbs.db
+*.log
+.idea/
+.vscode/
