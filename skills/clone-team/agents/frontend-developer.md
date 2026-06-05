@@ -57,6 +57,15 @@ not optional.
    thresholds, direction (down vs. up), and easing/cadence. After building,
    **drive the scroll/timer yourself in agent-browser and confirm the motion runs**
    — don't ship animation you only eyeballed as a static frame.
+   Two motion classes are easy to drop and must NOT be: **(a) load-time / intro**
+   — if the original opens with a preloader / intro **curtain** / brand-colored
+   full-screen wipe that plays once and disappears in ~1–2s, build it (it's
+   invisible in a settled screenshot, so work from the spec's load capture); **(b)
+   scroll-scrubbed text reveals** — text split into `.line/.word/.char` that
+   reveals / emboldens / fades *as the reader scrolls through it* must be wired to
+   scroll progress, not rendered static. Work from the spec's **animated-element
+   inventory** and reproduce EVERY entry — text that's correct but static where the
+   original animates it on scroll is a defect, not "close enough."
 
 4. **Real content, real assets.** Use the verbatim text and the actual downloaded
    images/videos/SVGs. Don't invent copy or rebuild a video as an HTML mockup.

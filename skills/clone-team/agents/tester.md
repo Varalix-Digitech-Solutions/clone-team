@@ -56,6 +56,22 @@ For a **section** delivery, regress:
    every scroll-, time-, hover-, or click-driven behavior you MUST *drive the
    interaction and diff the resulting STATE TRAJECTORY against the original*, not
    compare endpoint screenshots:
+   - **Load-time / intro motion (check this FIRST, with a COLD reload).** Some
+     motion plays only once, at page load — a preloader, an intro **curtain** /
+     splash, a brand-colored full-screen wipe, a page-transition overlay. A warm
+     browser has already finished it, so you will miss it unless you **hard-reload
+     a fresh session and watch the first ~0–2.5s** (screenshot at load + sample the
+     DOM every ~250ms). Confirm the clone reproduces the same intro (same color,
+     structure, duration, and exit) — and confirm the ORIGINAL's intro by reloading
+     it too. "The page starts with a green screen that wipes away" is a behavior; a
+     clone that loads straight to content with no intro is an NG.
+   - **Scrubbed text/element reveals:** text split into `.line/.word/.char` (often
+     with `overflow:clip` masks) that reveals, emboldens, or fades **as you scroll
+     through it** is scroll-SCRUBBED, not a one-shot entrance. Drive it: scroll in
+     increments across the block and confirm each line/word/char changes state with
+     scroll progress (not all-at-once, not static). Cross-check the **animated-
+     element inventory** from the spec — every element the original animates must
+     animate in the clone; one rendered static (right text, no motion) is an NG.
    - **Scroll-driven:** scroll in small increments through the element's active
      range on BOTH original and clone, and at each step read the animated state
      (the element's `transform`/`translateY`, `height`, `opacity`, the active

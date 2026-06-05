@@ -108,7 +108,16 @@ a "close enough" mess. Hold them as the team's shared truth:
   too fast even though it cycles through the right panels. Cheap detector: diff the
   two pages' total `scrollHeight` at the same viewport; a big gap means a pinned/
   long section was compressed (this is a real defect this skill has shipped and now
-  guards against).
+  guards against). **Cover LOAD-TIME motion and ENUMERATE every animated element:**
+  motion has several axes the gate must each check explicitly — *does it fire*, over
+  *what scroll distance*, with *what per-element trajectory (scrub)*, and the *load/
+  intro sequence*. Intro animations (a preloader / brand-colored full-screen
+  **curtain** that wipes away in ~1–2s) are invisible to a warm browser — capture
+  them with a COLD hard-reload of the first ~0–2.5s. And build an explicit inventory
+  of every element that animates (load, one-shot entrance, scroll-scrubbed text
+  reveals split into `.line/.word/.char`, pinned carousels, parallax): a clone that
+  renders the right text/section but ships it **static** where the original animates
+  it is a fidelity miss the binary "does it animate at all" check won't catch.
 - **The clone is a portable deliverable.** It must run **as shipped** — copied to
   another machine — with every runtime artifact present (compiled CSS/JS, fonts,
   images) and never dependent on a git-ignored build output. Two hard rules from

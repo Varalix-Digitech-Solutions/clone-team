@@ -18,9 +18,32 @@ template inline, without round-tripping to another file mid-build.
    scrollbars, global keyframes, backdrop filters), and **smooth-scroll
    libraries** (look for `.lenis`, Locomotive Scroll, custom scroll containers).
 3. **Mandatory interaction sweep** — a dedicated pass *after* screenshots:
+   - **LOAD / INTRO sequence FIRST (do this before anything settles).** Motion
+     that only plays once, at page load, is invisible to every later
+     observation — a hot/already-loaded browser has already finished it. So
+     **hard-reload with a COLD session and capture the first ~0–2.5s**: screenshot
+     at load and sample the DOM every ~250ms for a preloader / intro **curtain** /
+     splash / page-transition overlay (look for full-viewport `position:fixed`
+     elements, classes like `intro|loader|preloader|curtain|transition|splash|
+     overlay`, and brand-colored full-screen fills that disappear after ~1–2s).
+     Record the overlay's color, structure (e.g. a grid of cells, an animated
+     word), how long it shows, and how it exits (wipe / fade / cells stagger out).
+     A page that "starts with a green screen" is an intro animation — capture it,
+     don't let a warm browser hide it.
    - **Scroll** slowly top to bottom; note header changes (and the trigger
      position), elements that animate in, auto-switching sidebars/tabs,
      scroll-snap, and non-native scroll feel.
+   - **Build the ANIMATED-ELEMENT INVENTORY (required, not optional).** Don't just
+     note "things animate in." Enumerate **every** element that moves and classify
+     each: load-time, one-shot entrance (fires once on enter), or **scroll-scrubbed**
+     (state tied continuously to scroll progress — e.g. text split into
+     `.line/.word/.char` with `overflow:clip` masks that reveal/embolden/fade as
+     you scroll *through* the block, pinned carousels, parallax). For each, record
+     the trigger, the start→mid→end trajectory, and whether it's binary (fires) or
+     scrubbed (tracks scroll position) — see "Capture the SCROLL TRAJECTORY" below.
+     A clone that renders the right text but leaves it static where the original
+     reveals it char-by-char on scroll is a fidelity miss; the inventory is what
+     makes sure no animated element is silently shipped as static.
    - **Click** every interactive element; for tabs/pills click **each** and
      record the content per state.
    - **Hover** everything that might react; record what changes and the
