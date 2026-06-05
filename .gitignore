@@ -9,6 +9,9 @@ output/
 output-*/
 *-output/
 clone-team-workspace/
+
+# --- Local-only example clones (used to refine the skill; NEVER published) ---
+examples/
 **/with_skill/
 **/without_skill/
 **/old_skill/

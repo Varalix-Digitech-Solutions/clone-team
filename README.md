@@ -13,6 +13,12 @@ A [Claude Code](https://claude.com/claude-code) **skill** that orchestrates a **
 
 **If this saves you a week of pixel-pushing, drop a ⭐ — it genuinely helps.**
 
+<br/>
+
+![clone-team in action — a scroll-driven site, recreated](case-study/wembi/media/wembi-scroll.gif)
+
+<sub>A hard target recreated with clone-team: [wembi.ai](https://www.wembi.ai/) — Lenis smooth-scroll + scroll-driven video + reveal animations. <a href="case-study/wembi/">Full case study →</a></sub>
+
 </div>
 
 ---
