@@ -58,14 +58,25 @@ Two gates protect quality — the **Tester** (inside the loop) and the **Manager
 
 ## 🚀 Install
 
-clone-team is a Claude Code skill — drop it in your skills folder:
+**Recommended — install as a plugin** (one marketplace, one install, auto-updates). In Claude Code:
+
+```
+/plugin marketplace add Varalix-Digitech-Solutions/clone-team
+/plugin install clone-team@clone-team
+```
+
+That's it — the skill and the `/clone-status`, `/clone-pause`, `/clone-resume` commands are registered automatically. (Restart Claude Code if the commands don't show up immediately.)
+
+<details>
+<summary><b>Alternative — manual skill install (no plugins)</b></summary>
 
 ```bash
-git clone https://github.com/Varalix-Digitech-Solutions/clone-team.git ~/.claude/skills/clone-team
-
-# optional: enable the /clone-* slash commands
-cp ~/.claude/skills/clone-team/commands/clone-*.md ~/.claude/commands/
+git clone https://github.com/Varalix-Digitech-Solutions/clone-team.git
+cp -r clone-team/skills/clone-team ~/.claude/skills/clone-team
+# optional: the slash commands
+cp clone-team/commands/clone-*.md ~/.claude/commands/
 ```
+</details>
 
 **Requirements:** [Claude Code](https://claude.com/claude-code), Node.js (for the durable state CLI), and a Chromium browser (for real-browser verification via `agent-browser`). See [Dependencies](#-dependencies).
 
