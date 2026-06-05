@@ -136,6 +136,26 @@ a "close enough" mess. Hold them as the team's shared truth:
   filesystem root under `file://`). Verify by serving a clean *copy* of just the
   deliverable, and confirm fonts actually load.
 
+## Preflight — bootstrap the toolchain (run this first, once per machine)
+
+Before recon, make sure the companion skills and the `agent-browser` CLI are
+installed. This skill ships its **own idempotent installer** — run it and it
+installs whatever is missing and skips whatever's already there:
+
+```bash
+bash scripts/install-deps.sh          # install missing deps (safe to re-run)
+bash scripts/install-deps.sh --check  # optional dry-run: report, change nothing
+```
+
+It installs the `agent-browser` CLI (via npm) and these skills into
+`~/.claude/skills`: **`ui-pack`** (the design/frontend bundle, vendored with this
+skill), its constituents (**`clone-website`**, **`ui-ux-pro-max`**,
+**`impeccable`**, **`emil-design-eng`**), and **`ui-animation`** (motion craft for
+the two motion specialists). The hard dependency is **`agent-browser` on PATH** —
+if the installer reports it failed because `npm` is missing, ask the user to
+install Node/npm, then re-run. Don't proceed to recon until the toolchain is
+present.
+
 ## Phase 0 — Setup & Requirements (interactive, you + the user)
 
 Do this yourself in the main thread. Be efficient; batch your questions.
