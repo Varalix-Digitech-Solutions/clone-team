@@ -5,21 +5,37 @@
 # re-downloaded or overwritten. Safe to run repeatedly.
 #
 # Usage:
-#   bash install-deps.sh            # install whatever is missing
+#   bash install-deps.sh            # install whatever is missing (PROJECT-LOCAL)
 #   bash install-deps.sh --check    # dry run: report what's missing, install nothing
+#   bash install-deps.sh --global   # install into the user's global ~/.claude/skills
 #
-# Skills land in $CLAUDE_SKILLS_DIR (default ~/.claude/skills). The agent-browser
-# CLI installs via npm. Requires: git, and npm (only if agent-browser is missing).
+# By DEFAULT skills install PROJECT-LOCAL, into ./.claude/skills of the current
+# directory — so cloning a site does NOT pollute the user's global skills. Pass
+# --global for ~/.claude/skills, or set CLAUDE_SKILLS_DIR to target an explicit
+# path (overrides both). The agent-browser CLI is a global npm tool regardless.
+# Requires: git, and npm (only if agent-browser is missing).
 
 set -uo pipefail
 
-CHECK=0
-[ "${1:-}" = "--check" ] && CHECK=1
+CHECK=0; GLOBAL=0
+for a in "$@"; do
+  case "$a" in
+    --check)  CHECK=1 ;;
+    --global) GLOBAL=1 ;;
+  esac
+done
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 VENDOR_DIR="$SCRIPT_DIR/../vendor"
 
-SKILLS_DIR="${CLAUDE_SKILLS_DIR:-$HOME/.claude/skills}"
+# Resolve the skills dir: explicit override > --global > project-local (default).
+if [ -n "${CLAUDE_SKILLS_DIR:-}" ]; then
+  SKILLS_DIR="$CLAUDE_SKILLS_DIR"
+elif [ "$GLOBAL" = "1" ]; then
+  SKILLS_DIR="$HOME/.claude/skills"
+else
+  SKILLS_DIR="$PWD/.claude/skills"   # PROJECT-LOCAL by default
+fi
 mkdir -p "$SKILLS_DIR"
 
 installed=(); skipped=(); missing=(); failed=()
