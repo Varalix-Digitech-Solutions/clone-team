@@ -79,10 +79,14 @@ evals/
   `impeccable`, `emil-design-eng` + points at the `agent-browser` CLI). It is
   **vendored at `vendor/ui-pack/`** so a public install never depends on a second
   repo. `scripts/install-deps.sh` is the idempotent bootstrap: it copies vendored
-  `ui-pack` into `~/.claude/skills` and git-clones the public constituents +
-  `ui-animation`, and installs `agent-browser` via npm. SKILL.md runs it at
-  Preflight. Don't make the agents depend on an un-vendored `ui-pack`, and don't
-  let the installer overwrite an already-present skill (it detects and skips).
+  `ui-pack` and git-clones the public constituents + `ui-animation`, and installs
+  `agent-browser` via npm. **Skills install PROJECT-LOCAL by default** (into
+  `$PWD/.claude/skills`) so a clone run never pollutes the user's global
+  `~/.claude/skills`; `--global` opts into `~/.claude/skills`, `CLAUDE_SKILLS_DIR`
+  overrides both. SKILL.md runs it at Preflight, from the project root. Don't make
+  the agents depend on an un-vendored `ui-pack`, don't let the installer overwrite
+  an already-present skill (it detects and skips), and don't revert the local
+  default to global.
 - **Two gates, never one:** Tester (in the loop) then Manager (final). Approved
   work only.
 - **The motion track is additive and ordered — don't collapse it.** A dedicated

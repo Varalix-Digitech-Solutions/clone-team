@@ -73,7 +73,7 @@ Two gates protect quality — the **Tester** (inside the loop) and the **Manager
 
 That's it — the skill and the `/clone-status`, `/clone-pause`, `/clone-resume` commands are registered automatically. (Restart Claude Code if the commands don't show up immediately.)
 
-**You don't install the companion skills yourself.** The first time you run a clone, clone-team **bootstraps its own toolchain** — it runs a bundled, idempotent installer that fetches the `agent-browser` CLI and the companion skills (`ui-pack` and friends, `ui-animation`) into `~/.claude/skills`, skipping anything already present. Just install the plugin and ask it to clone a site; it sets itself up and then gets to work. See [Dependencies](#-dependencies).
+**You don't install the companion skills yourself.** The first time you run a clone, clone-team **bootstraps its own toolchain** — it runs a bundled, idempotent installer that fetches the `agent-browser` CLI and the companion skills (`ui-pack` and friends, `ui-animation`) **project-local** (into `./.claude/skills`, so your global skills stay clean), skipping anything already present. Just install the plugin and ask it to clone a site; it sets itself up and then gets to work. See [Dependencies](#-dependencies).
 
 <details>
 <summary><b>Alternative — manual skill install (no plugins)</b></summary>
@@ -124,8 +124,11 @@ Long jobs need an off switch. State lives in a durable `.clone-team/state.json` 
 
 **These install automatically** — clone-team ships `scripts/install-deps.sh`, an
 idempotent installer it runs on first use (and which you can run yourself any time:
-`bash scripts/install-deps.sh`, or `--check` for a dry run). It fetches each piece
-into `~/.claude/skills`, skipping whatever's already there:
+`bash scripts/install-deps.sh`, or `--check` for a dry run). By default it installs
+the companion skills **project-local** — into `./.claude/skills` of the folder
+you're cloning in — so it **never pollutes your global `~/.claude/skills`** (pass
+`--global` if you do want them installed globally). It skips whatever's already
+present:
 
 - **`ui-pack`** — design/frontend skill **bundle** (the single entry point the agents load); **vendored with this plugin**, so it's always available. It in turn loads its constituents below.
 - **`clone-website`** — extraction + builder dispatch
