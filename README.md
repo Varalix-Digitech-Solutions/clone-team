@@ -45,7 +45,7 @@ A *dynamic Workflow* is a deterministic JavaScript program that spawns and coord
 
 - **The Tester gate is unskippable.** Per page: `extract → spec → build → full-regression-test → fix → re-test …` runs as a `while` loop whose exit condition *is* the Tester's `OK`. No human, no model, and no "looks fine under deadline pressure" can bypass it.
 - **It adapts to the work.** One-page site → one builder. Nine-page site → nine, running concurrently. The Workflow reads the page list and fans out accordingly.
-- **It adapts to your machine.** A capacity probe reads real free RAM and sizes the concurrency "wave" — many builders on a big box, one at a time on a laptop — so it never OOM-kills the host.
+- **It sizes the agent fleet to your PC.** Before launching, a capacity probe reads your machine's free memory and computes how many builder agents to run at once — many in parallel on a big box, a few at a time on a laptop — so it goes as fast as your hardware allows without ever OOM-crashing it.
 - **It feeds failure back as input.** A Tester `NG` isn't just a fail; its structured issue list becomes the *next* Developer round's fix list.
 - **It's pausable & resumable** — even across sessions and usage-limit cutoffs — because progress is reconciled against a durable `state.json` + on-disk artifacts.
 

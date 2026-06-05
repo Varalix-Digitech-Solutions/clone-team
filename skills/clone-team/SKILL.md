@@ -139,19 +139,22 @@ a "close enough" mess. Hold them as the team's shared truth:
 ## Preflight — bootstrap the toolchain (run this first, once per project)
 
 Before recon, make sure the companion skills and the `agent-browser` CLI are
-installed. This skill ships its **own idempotent installer** — run it **from the
-project root** (your current directory) and it installs whatever is missing and
-skips whatever's already there:
+installed. This skill ships its **own idempotent installer** that installs
+whatever is missing and skips whatever's already there. **Invoke it by its full
+path** (this skill may be installed in a plugin dir away from the user's project)
+and **point it at the project root with `--dir`** so the skills land where the
+agents can find them — never assume the current directory:
 
 ```bash
-bash scripts/install-deps.sh          # install missing deps PROJECT-LOCAL (safe to re-run)
-bash scripts/install-deps.sh --check  # optional dry-run: report, change nothing
+# <SKILL_DIR> is this skill's own directory; <PROJECT_ROOT> is where you're cloning into.
+bash <SKILL_DIR>/scripts/install-deps.sh --dir <PROJECT_ROOT>          # install (safe to re-run)
+bash <SKILL_DIR>/scripts/install-deps.sh --dir <PROJECT_ROOT> --check  # optional dry-run
 ```
 
-By default it installs the skills **project-local**, into `./.claude/skills` of
-the directory you run it from — so cloning a site never pollutes the user's
-**global** `~/.claude/skills`. (Pass `--global` only if the user explicitly wants
-them installed globally.) It installs: **`ui-pack`** (the design/frontend bundle,
+By default it installs the skills **project-local**, into `<PROJECT_ROOT>/.claude/skills`
+— so cloning a site never pollutes the user's **global** `~/.claude/skills`. (Pass
+`--global` only if the user explicitly wants them installed globally.) It installs:
+**`ui-pack`** (the design/frontend bundle,
 vendored with this skill), its constituents (**`clone-website`**,
 **`ui-ux-pro-max`**, **`impeccable`**, **`emil-design-eng`**), and
 **`ui-animation`** (motion craft for the two motion specialists). The
@@ -160,11 +163,14 @@ a skill).
 
 The hard dependency is **`agent-browser` on PATH** — if the installer reports it
 failed because `npm` is missing, ask the user to install Node/npm, then re-run.
-Run this **before** you choose the build/output folder, so the local
-`.claude/skills` lands at the project root where the agents can discover it. Don't
-proceed to recon until the toolchain is present. (If a just-installed skill isn't
-discovered by an agent mid-session, the files are on disk — the personas degrade
-gracefully, and a re-invoke picks them up.)
+Use the **project root** for `--dir` (the workspace where the user is cloning, the
+same place the build/output folder will live) so its `.claude/skills` is where the
+agents discover it. Don't proceed to recon until the toolchain is present — but
+note the skill is **resilient by design**: `agent-browser` is the only true
+blocker, and if a just-installed skill isn't hot-loaded mid-session, the files are
+on disk and **every persona degrades gracefully** to the bundled `references/*.md`
+plus the `agent-browser` CLI, so the run still works (a re-invoke picks the skills
+up fully).
 
 ## Phase 0 — Setup & Requirements (interactive, you + the user)
 
