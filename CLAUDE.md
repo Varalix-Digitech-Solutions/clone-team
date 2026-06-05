@@ -55,6 +55,9 @@ references/
 scripts/
   state.mjs                       # durable state CLI (init/status/mark-section/remaining/…)
   capacity.mjs                    # host-capacity probe -> recommended waveSize (check before launch)
+  install-deps.sh                 # idempotent dep bootstrap: agent-browser CLI + companion skills (run at Preflight)
+vendor/
+  ui-pack/SKILL.md                # the vendored ui-pack wrapper skill (installer copies it to ~/.claude/skills)
 commands/
   clone-status.md / clone-pause.md / clone-resume.md
 evals/
@@ -69,7 +72,17 @@ evals/
   Manager reads the agent files and passes them in, so there's one source. If you
   edit a persona, edit the `agents/*.md` file.
 - **Every agent loads `ui-pack` first** and verifies via `agent-browser`. This is
-  baked into every persona; keep it there.
+  baked into every persona; keep it there. The two motion agents additionally load
+  `ui-animation` (degrading to `references/motion-playbook.md`).
+- **Dependencies are self-bootstrapping; `ui-pack` is vendored, not external.**
+  `ui-pack` is a thin **wrapper** skill (loads `clone-website`, `ui-ux-pro-max`,
+  `impeccable`, `emil-design-eng` + points at the `agent-browser` CLI). It is
+  **vendored at `vendor/ui-pack/`** so a public install never depends on a second
+  repo. `scripts/install-deps.sh` is the idempotent bootstrap: it copies vendored
+  `ui-pack` into `~/.claude/skills` and git-clones the public constituents +
+  `ui-animation`, and installs `agent-browser` via npm. SKILL.md runs it at
+  Preflight. Don't make the agents depend on an un-vendored `ui-pack`, and don't
+  let the installer overwrite an already-present skill (it detects and skips).
 - **Two gates, never one:** Tester (in the loop) then Manager (final). Approved
   work only.
 - **The motion track is additive and ordered — don't collapse it.** A dedicated

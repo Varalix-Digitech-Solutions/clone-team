@@ -73,6 +73,8 @@ Two gates protect quality — the **Tester** (inside the loop) and the **Manager
 
 That's it — the skill and the `/clone-status`, `/clone-pause`, `/clone-resume` commands are registered automatically. (Restart Claude Code if the commands don't show up immediately.)
 
+**You don't install the companion skills yourself.** The first time you run a clone, clone-team **bootstraps its own toolchain** — it runs a bundled, idempotent installer that fetches the `agent-browser` CLI and the companion skills (`ui-pack` and friends, `ui-animation`) into `~/.claude/skills`, skipping anything already present. Just install the plugin and ask it to clone a site; it sets itself up and then gets to work. See [Dependencies](#-dependencies).
+
 <details>
 <summary><b>Alternative — manual skill install (no plugins)</b></summary>
 
@@ -81,10 +83,12 @@ git clone https://github.com/Varalix-Digitech-Solutions/clone-team.git
 cp -r clone-team/skills/clone-team ~/.claude/skills/clone-team
 # optional: the slash commands
 cp clone-team/commands/clone-*.md ~/.claude/commands/
+# bootstrap the companion skills + agent-browser CLI (idempotent)
+bash ~/.claude/skills/clone-team/scripts/install-deps.sh
 ```
 </details>
 
-**Requirements:** [Claude Code](https://claude.com/claude-code), Node.js (for the durable state CLI), and a Chromium browser (for real-browser verification via `agent-browser`). See [Dependencies](#-dependencies).
+**Requirements:** [Claude Code](https://claude.com/claude-code), Node.js + npm (for the durable state CLI and to install `agent-browser`), and a Chromium browser (for real-browser verification via `agent-browser`). Everything else installs automatically — see [Dependencies](#-dependencies).
 
 ## 🧑‍💻 How to use it
 
@@ -118,13 +122,18 @@ Long jobs need an off switch. State lives in a durable `.clone-team/state.json` 
 
 ## 📦 Dependencies
 
-clone-team stands on these companion skills (install alongside it):
+**These install automatically** — clone-team ships `scripts/install-deps.sh`, an
+idempotent installer it runs on first use (and which you can run yourself any time:
+`bash scripts/install-deps.sh`, or `--check` for a dry run). It fetches each piece
+into `~/.claude/skills`, skipping whatever's already there:
 
-- **`ui-pack`** — design/frontend skill bundle (loads the rest); degrades gracefully if absent
+- **`ui-pack`** — design/frontend skill **bundle** (the single entry point the agents load); **vendored with this plugin**, so it's always available. It in turn loads its constituents below.
 - **`clone-website`** — extraction + builder dispatch
-- **`agent-browser`** — real-browser automation for building *and* verifying
 - **`ui-ux-pro-max`**, **`impeccable`**, **`emil-design-eng`** — design intelligence + polish
-- **`ui-animation`** — motion craft (transitions/keyframes/springs, easing, clip-path reveals, gestures, performance) for the motion specialists; degrades gracefully if absent
+- **`ui-animation`** — motion craft (transitions/keyframes/springs, easing, clip-path reveals, gestures, performance) for the two motion specialists
+- **`agent-browser`** — real-browser automation (npm CLI) for building *and* verifying; the one **hard** dependency (needs Node/npm on PATH)
+
+Every piece degrades gracefully if absent except `agent-browser`, which is required for real-browser verification.
 
 ## 🛡️ Responsible use
 
