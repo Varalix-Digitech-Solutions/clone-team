@@ -344,6 +344,11 @@
   .compare-note {
     text-align: center; color: var(--ink-faint); font-size: 0.85rem; margin-top: 36px;
   }
+  .combo {
+    margin: 0; border: 1px solid var(--border); border-radius: 12px; overflow: hidden;
+    background: #000; box-shadow: 0 24px 60px -30px rgba(0,0,0,0.85);
+  }
+  .combo img { display: block; width: 100%; height: auto; }
 
   /* ---------- scroll reveal ---------- */
   .reveal { opacity: 0; transform: translateY(18px); transition: opacity 600ms var(--ease-out), transform 600ms var(--ease-out); }
@@ -430,8 +435,9 @@
     <div class="sec-head reveal">
       <div class="kicker">Real case studies</div>
       <h2>Original vs. clone — side by side.</h2>
-      <p>Not cherry-picked stills. In each pair, the <b style="color:var(--ink)">live site</b> is on the left and the
-        <b style="color:var(--orange-soft)">clone-team build</b> is on the right — captured the same way, same viewport.</p>
+      <p>Not cherry-picked stills. In each clip the <b style="color:var(--ink)">live site</b> is on the left and the
+        <b style="color:var(--orange-soft)">clone-team build</b> is on the right — driven in lockstep so both stay at the
+        exact same point. One recording, perfectly in sync.</p>
     </div>
 
     <div class="case reveal">
@@ -442,16 +448,9 @@
         </div>
         <a class="btn btn-ghost btn-sm" href="https://mubasic-test.webflow.io/" target="_blank" rel="noopener">Visit original ↗</a>
       </div>
-      <div class="compare">
-        <figure class="vid-wrap">
-          <span class="tag tag-orig">Original</span>
-          <img src="media/mubasic-orig.gif" loading="lazy" alt="Mubasic original — live site" />
-        </figure>
-        <figure class="vid-wrap">
-          <span class="tag tag-clone">clone-team</span>
-          <img src="media/mubasic-clone.gif" loading="lazy" alt="Mubasic clone-team build" />
-        </figure>
-      </div>
+      <figure class="combo">
+        <img src="media/mubasic-compare.gif" loading="lazy" alt="Mubasic — original (left) vs clone-team build (right), in sync" />
+      </figure>
     </div>
 
     <div class="case reveal">
@@ -462,16 +461,9 @@
         </div>
         <a class="btn btn-ghost btn-sm" href="https://www.wembi.ai/" target="_blank" rel="noopener">Visit original ↗</a>
       </div>
-      <div class="compare">
-        <figure class="vid-wrap">
-          <span class="tag tag-orig">Original</span>
-          <img src="media/wembi-orig.gif" loading="lazy" alt="Wembi original — live site" />
-        </figure>
-        <figure class="vid-wrap">
-          <span class="tag tag-clone">clone-team</span>
-          <img src="media/wembi-clone.gif" loading="lazy" alt="Wembi clone-team build" />
-        </figure>
-      </div>
+      <figure class="combo">
+        <img src="media/wembi-compare.gif" loading="lazy" alt="Wembi — original (left) vs clone-team build (right), scroll-synced" />
+      </figure>
     </div>
 
     <p class="compare-note reveal">↑ Real screen recordings of the live sites and their clone-team builds — not mockups.</p>

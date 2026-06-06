@@ -15,18 +15,9 @@ A [Claude Code](https://claude.com/claude-code) **skill** that orchestrates a **
 
 <br/>
 
-<table>
-  <tr>
-    <td align="center"><b>🌐 Original — <a href="https://www.wembi.ai/">wembi.ai</a></b></td>
-    <td align="center"><b>🧬 clone-team build</b></td>
-  </tr>
-  <tr>
-    <td width="50%"><img src="docs/media/wembi-orig.gif" alt="wembi.ai — original live site" width="100%"></td>
-    <td width="50%"><img src="docs/media/wembi-clone.gif" alt="wembi.ai — clone-team build" width="100%"></td>
-  </tr>
-</table>
+<img src="docs/media/wembi-compare.gif" alt="wembi.ai — original (left) vs clone-team build (right), scroll-synced side by side" width="100%">
 
-<sub>Real screen recordings, same viewport — the **live site** (left) vs. the **clone-team build** (right). A hard target: Lenis smooth-scroll + scroll-driven 3D + reveal animations. <a href="case-study/wembi/">Full case study →</a></sub>
+<sub><b>Original (left)</b> vs. <b>clone-team build (right)</b> — <a href="https://www.wembi.ai/">wembi.ai</a>, driven in lockstep so both stay at the same scroll point. A hard target: Lenis smooth-scroll + scroll-driven 3D + reveal animations. <a href="case-study/wembi/">Full case study →</a></sub>
 
 </div>
 
