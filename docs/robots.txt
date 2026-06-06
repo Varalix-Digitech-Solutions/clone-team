@@ -1,0 +1,19 @@
+# clone-team — https://clone-team.varalix.com/
+User-agent: *
+Allow: /
+
+# AI crawlers welcome (training + answer engines)
+User-agent: GPTBot
+Allow: /
+User-agent: ChatGPT-User
+Allow: /
+User-agent: ClaudeBot
+Allow: /
+User-agent: Claude-Web
+Allow: /
+User-agent: PerplexityBot
+Allow: /
+User-agent: Google-Extended
+Allow: /
+
+Sitemap: https://clone-team.varalix.com/sitemap.xml
