@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>clone-team — Clone any website with a team of AI agents</title>
+<meta name="description" content="A Claude Code skill that orchestrates a team of AI agents to produce a pixel-perfect UI clone of any website AND reverse-engineered architecture docs — with an unskippable test gate." />
+<meta name="author" content="Varalix Digitech Solutions" />
+<link rel="canonical" href="https://varalix-digitech-solutions.github.io/clone-team/" />
+
+<!-- Open Graph / social -->
+<meta property="og:type" content="website" />
+<meta property="og:title" content="clone-team — Clone any website with a team of AI agents" />
+<meta property="og:description" content="Pixel-perfect UI clone + reverse-engineered architecture docs. A Claude Code skill built on the dynamic Workflow engine with an unskippable test gate." />
+<meta property="og:url" content="https://varalix-digitech-solutions.github.io/clone-team/" />
+<meta property="og:image" content="https://varalix-digitech-solutions.github.io/clone-team/media/wembi-hero.png" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="clone-team — Clone any website with a team of AI agents" />
+<meta name="twitter:description" content="Pixel-perfect UI clone + reverse-engineered architecture docs. A Claude Code skill with an unskippable test gate." />
+<meta name="twitter:image" content="https://varalix-digitech-solutions.github.io/clone-team/media/wembi-hero.png" />
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A7%AC%3C/text%3E%3C/svg%3E" />
+
+<style>
+  :root {
+    --bg: #0a0a0c;
+    --bg-soft: #111114;
+    --panel: #16161b;
+    --border: #26262e;
+    --border-soft: #1d1d24;
+    --ink: #f4f4f6;
+    --ink-dim: #b4b4c0;
+    --ink-faint: #82828f;
+    --orange: #d97757;
+    --orange-soft: #e89070;
+    --purple: #8b5cf6;
+    --purple-soft: #a78bfa;
+    --green: #34d399;
+
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+    --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+
+    --maxw: 1080px;
+    --radius: 14px;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", "Fira Code", Menlo, Consolas, monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+  }
+
+  a { color: inherit; text-decoration: none; }
+
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 24px; }
+
+  /* ---------- ambient glow ---------- */
+  .glow {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background:
+      radial-gradient(60% 50% at 50% -10%, rgba(217, 119, 87, 0.16), transparent 70%),
+      radial-gradient(50% 40% at 85% 10%, rgba(139, 92, 246, 0.12), transparent 70%);
+    pointer-events: none;
+  }
+
+  /* ---------- nav ---------- */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    backdrop-filter: blur(12px);
+    background: rgba(10, 10, 12, 0.7);
+    border-bottom: 1px solid transparent;
+    transition: border-color 200ms var(--ease-out), background 200ms var(--ease-out);
+  }
+  nav.scrolled { border-bottom-color: var(--border-soft); }
+  nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 60px; }
+  .brand { display: flex; align-items: center; gap: 9px; font-weight: 650; font-size: 16px; letter-spacing: -0.01em; }
+  .brand .mark { font-size: 20px; }
+  .nav-links { display: flex; align-items: center; gap: 4px; }
+  .nav-links a {
+    color: var(--ink-dim);
+    font-size: 14px;
+    font-weight: 500;
+    padding: 7px 12px;
+    border-radius: 8px;
+    transition: color 150ms var(--ease-out), background 150ms var(--ease-out);
+  }
+  .nav-links a:hover { color: var(--ink); background: var(--panel); }
+  @media (max-width: 640px) { .nav-links .hide-sm { display: none; } }
+
+  /* ---------- buttons ---------- */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font);
+    font-size: 14px;
+    font-weight: 600;
+    padding: 10px 18px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: transform 160ms var(--ease-out), background 160ms var(--ease-out),
+                border-color 160ms var(--ease-out), box-shadow 160ms var(--ease-out);
+    white-space: nowrap;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary {
+    background: var(--orange);
+    color: #1a0f0a;
+    box-shadow: 0 8px 24px -8px rgba(217, 119, 87, 0.55);
+  }
+  .btn-primary:hover { background: var(--orange-soft); box-shadow: 0 10px 30px -8px rgba(217, 119, 87, 0.7); }
+  .btn-ghost { background: var(--panel); color: var(--ink); border-color: var(--border); }
+  .btn-ghost:hover { border-color: #38384400; background: #1e1e25; border-color: #3a3a46; }
+  .btn-sm { padding: 7px 14px; font-size: 13px; }
+
+  /* ---------- hero ---------- */
+  header { padding: 88px 0 56px; text-align: center; }
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12.5px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--ink-dim);
+    background: var(--panel);
+    border: 1px solid var(--border);
+    padding: 6px 13px;
+    border-radius: 999px;
+    margin-bottom: 28px;
+  }
+  .eyebrow .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 10px var(--green); }
+
+  h1 {
+    font-size: clamp(2.4rem, 6vw, 4rem);
+    line-height: 1.05;
+    font-weight: 720;
+    letter-spacing: -0.03em;
+    margin-bottom: 22px;
+  }
+  h1 .grad {
+    background: linear-gradient(110deg, var(--orange-soft) 10%, var(--purple-soft) 90%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .sub {
+    font-size: clamp(1.05rem, 2.2vw, 1.3rem);
+    color: var(--ink-dim);
+    max-width: 660px;
+    margin: 0 auto 36px;
+    font-weight: 400;
+  }
+  .sub b { color: var(--ink); font-weight: 600; }
+  .cta-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+  /* ---------- hero media ---------- */
+  .hero-media {
+    margin: 64px auto 0;
+    max-width: 920px;
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid var(--border);
+    box-shadow: 0 40px 120px -40px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255,255,255,0.02) inset;
+    position: relative;
+  }
+  .hero-media img { display: block; width: 100%; height: auto; }
+  .media-bar {
+    display: flex; align-items: center; gap: 7px;
+    padding: 11px 14px;
+    background: var(--bg-soft);
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .media-bar .tl { width: 11px; height: 11px; border-radius: 50%; }
+  .media-cap {
+    margin: 18px auto 0;
+    max-width: 920px;
+    font-size: 13.5px;
+    color: var(--ink-faint);
+    text-align: center;
+  }
+  .media-cap a { color: var(--orange-soft); border-bottom: 1px solid transparent; transition: border-color 150ms; }
+  .media-cap a:hover { border-bottom-color: var(--orange-soft); }
+
+  /* ---------- sections ---------- */
+  section { padding: 72px 0; }
+  .sec-head { text-align: center; max-width: 640px; margin: 0 auto 48px; }
+  .sec-head h2 {
+    font-size: clamp(1.7rem, 4vw, 2.4rem);
+    font-weight: 680;
+    letter-spacing: -0.025em;
+    margin-bottom: 14px;
+  }
+  .sec-head p { color: var(--ink-dim); font-size: 1.05rem; }
+  .kicker {
+    font-size: 12.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--orange); margin-bottom: 14px;
+  }
+
+  /* ---------- deliverables ---------- */
+  .deliverables { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 720px) { .deliverables { grid-template-columns: 1fr; } }
+  .card {
+    background: linear-gradient(180deg, var(--panel), var(--bg-soft));
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 30px;
+    transition: transform 250ms var(--ease-out), border-color 250ms var(--ease-out);
+  }
+  .card .ic { font-size: 28px; margin-bottom: 16px; display: block; }
+  .card h3 { font-size: 1.25rem; font-weight: 640; letter-spacing: -0.01em; margin-bottom: 10px; }
+  .card p { color: var(--ink-dim); font-size: 0.97rem; }
+  @media (hover: hover) and (pointer: fine) {
+    .card:hover { transform: translateY(-4px); border-color: #3a3a46; }
+  }
+
+  /* ---------- engine / pipeline ---------- */
+  .engine { background: var(--bg-soft); border-top: 1px solid var(--border-soft); border-bottom: 1px solid var(--border-soft); }
+  .pipe {
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.85;
+    background: #0c0c0f;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 26px 28px;
+    overflow-x: auto;
+    color: var(--ink-dim);
+    max-width: 860px;
+    margin: 0 auto 40px;
+  }
+  .pipe .c-or { color: var(--orange-soft); }
+  .pipe .c-pu { color: var(--purple-soft); }
+  .pipe .c-gr { color: var(--green); }
+  .pipe .c-dim { color: var(--ink-faint); }
+
+  .features { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; max-width: 880px; margin: 0 auto; }
+  @media (max-width: 720px) { .features { grid-template-columns: 1fr; } }
+  .feat { display: flex; gap: 14px; align-items: flex-start; }
+  .feat .fic {
+    flex: 0 0 auto; width: 36px; height: 36px; border-radius: 9px;
+    display: grid; place-items: center; font-size: 17px;
+    background: rgba(217, 119, 87, 0.12); border: 1px solid rgba(217, 119, 87, 0.25);
+  }
+  .feat h4 { font-size: 1rem; font-weight: 620; margin-bottom: 3px; }
+  .feat p { font-size: 0.9rem; color: var(--ink-faint); line-height: 1.55; }
+
+  /* ---------- install ---------- */
+  .code {
+    background: #0c0c0f;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    font-family: var(--mono);
+    font-size: 13.5px;
+    line-height: 1.7;
+    color: var(--ink-dim);
+    max-width: 720px;
+    margin: 0 auto;
+    overflow: hidden;
+  }
+  .code-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 9px 14px; background: var(--bg-soft); border-bottom: 1px solid var(--border-soft);
+    font-size: 12px; color: var(--ink-faint);
+  }
+  .code-body { padding: 18px 18px; overflow-x: auto; }
+  .code-body pre { font-family: var(--mono); }
+  .code .cmd { color: var(--ink); }
+  .code .cmt { color: var(--ink-faint); }
+  .code .tok { color: var(--purple-soft); }
+  .copy-btn {
+    font-family: var(--font); font-size: 12px; font-weight: 600;
+    color: var(--ink-dim); background: var(--panel); border: 1px solid var(--border);
+    padding: 4px 11px; border-radius: 7px; cursor: pointer;
+    transition: transform 140ms var(--ease-out), color 140ms, border-color 140ms;
+  }
+  .copy-btn:hover { color: var(--ink); border-color: #3a3a46; }
+  .copy-btn:active { transform: scale(0.95); }
+
+  .install-note { text-align: center; color: var(--ink-faint); font-size: 0.92rem; margin-top: 22px; max-width: 600px; margin-left: auto; margin-right: auto; }
+
+  /* ---------- gates ---------- */
+  .gates { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-top: 8px; }
+  .gate {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px 22px; max-width: 340px;
+  }
+  .gate .gn { font-size: 22px; }
+  .gate b { display: block; font-size: 0.98rem; }
+  .gate span { font-size: 0.85rem; color: var(--ink-faint); }
+
+  /* ---------- footer ---------- */
+  footer { border-top: 1px solid var(--border-soft); padding: 46px 0 60px; text-align: center; }
+  footer .flinks { display: flex; gap: 22px; justify-content: center; flex-wrap: wrap; margin-bottom: 22px; }
+  footer .flinks a { color: var(--ink-dim); font-size: 14px; transition: color 150ms; }
+  footer .flinks a:hover { color: var(--ink); }
+  footer .copy { color: var(--ink-faint); font-size: 13px; }
+  footer .copy a { color: var(--orange-soft); }
+
+  /* ---------- scroll reveal ---------- */
+  .reveal { opacity: 0; transform: translateY(18px); transition: opacity 600ms var(--ease-out), transform 600ms var(--ease-out); }
+  .reveal.in { opacity: 1; transform: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .reveal { opacity: 1; transform: none; transition: none; }
+    .btn:active, .copy-btn:active, .card:hover { transform: none; }
+  }
+</style>
+</head>
+<body>
+<div class="glow"></div>
+
+<nav id="nav">
+  <div class="wrap">
+    <a class="brand" href="#top"><span class="mark">🧬</span> clone-team</a>
+    <div class="nav-links">
+      <a class="hide-sm" href="#deliverables">Deliverables</a>
+      <a class="hide-sm" href="#engine">The engine</a>
+      <a class="hide-sm" href="#install">Install</a>
+      <a class="btn btn-ghost btn-sm" href="https://github.com/Varalix-Digitech-Solutions/clone-team" target="_blank" rel="noopener">★ GitHub</a>
+    </div>
+  </div>
+</nav>
+
+<header id="top">
+  <div class="wrap">
+    <div class="eyebrow reveal"><span class="dot"></span> A Claude Code skill · built on dynamic Workflows</div>
+    <h1 class="reveal">Clone any website with a<br /><span class="grad">team of AI agents.</span></h1>
+    <p class="sub reveal">
+      A Manager, a Frontend Developer, a Backend Architect, and a Tester that
+      iteratively build a <b>pixel-perfect UI clone</b> — and produce
+      <b>reverse-engineered architecture docs</b> — in the stack <b>you</b> choose.
+    </p>
+    <div class="cta-row reveal">
+      <a class="btn btn-primary" href="https://github.com/Varalix-Digitech-Solutions/clone-team" target="_blank" rel="noopener">
+        ⭐ Star on GitHub
+      </a>
+      <a class="btn btn-ghost" href="#install">Install the skill →</a>
+    </div>
+
+    <div class="hero-media reveal">
+      <div class="media-bar">
+        <span class="tl" style="background:#ff5f57"></span>
+        <span class="tl" style="background:#febc2e"></span>
+        <span class="tl" style="background:#28c840"></span>
+      </div>
+      <img src="media/wembi-scroll.gif" alt="clone-team recreating a scroll-driven site in real time" loading="lazy" />
+    </div>
+    <p class="media-cap reveal">
+      A hard target recreated with clone-team: <a href="https://www.wembi.ai/" target="_blank" rel="noopener">wembi.ai</a> —
+      Lenis smooth-scroll + scroll-driven video + reveal animations.
+    </p>
+  </div>
+</header>
+
+<section id="deliverables">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="kicker">Two deliverables, every run</div>
+      <h2>Not just pixels — understanding.</h2>
+      <p>Most "AI clone this site" tools hand you a rough one-shot and call it done. clone-team gives you the clone <i>and</i> the blueprint.</p>
+    </div>
+    <div class="deliverables">
+      <div class="card reveal">
+        <span class="ic">🎨</span>
+        <h3>An exact UI clone</h3>
+        <p>Pixel-perfect, behavior-accurate, in <b>your</b> stack — React, Next.js, Vue, Svelte, Angular, or plain HTML/CSS — independent of the source site's stack.</p>
+      </div>
+      <div class="card reveal">
+        <span class="ic">📐</span>
+        <h3>ARCHITECTURE.md</h3>
+        <p>Routes, observed API/network surface, inferred data model &amp; entities, auth/session flow, state &amp; navigation, and step-by-step user journeys.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="engine" class="engine">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="kicker">The engine</div>
+      <h2>A dynamic Workflow that can't skip the test.</h2>
+      <p>The build/test loop is a <i>deterministic program</i>, not a model's good intentions. "Done" is literally a loop condition in code.</p>
+    </div>
+
+    <div class="pipe reveal">
+<span class="c-dim">user ⇄</span> <span class="c-or">MANAGER</span> <span class="c-dim">(main thread)</span>     requirements, creds, recon,
+        │                    foundation, final regression, pause/resume
+        │ launches a <span class="c-pu">DYNAMIC WORKFLOW</span> that <b style="color:#f4f4f6">ENFORCES</b> the loop
+        ▼
+  per page, in parallel:
+    extract → spec → <span class="c-or">DEVELOPER</span> builds →
+    <span class="c-pu">TESTER</span> full regression → <span style="color:#f87171">(NG)</span> fix → re-test → <span class="c-gr">OK ✅</span>
+  in parallel:
+    <span class="c-pu">BACKEND ARCHITECT</span> writes ARCHITECTURE.md
+  then:
+    assemble → final regression → fix
+    </div>
+
+    <div class="features">
+      <div class="feat reveal">
+        <div class="fic">🔒</div>
+        <div><h4>The Tester gate is unskippable</h4><p>Per page, a <code>while</code> loop runs until the Tester returns <code>OK</code>. No human, model, or deadline pressure can bypass it.</p></div>
+      </div>
+      <div class="feat reveal">
+        <div class="fic">🔀</div>
+        <div><h4>It adapts to the work</h4><p>One-page site → one builder. Nine-page site → nine, concurrently. The Workflow reads the page list and fans out.</p></div>
+      </div>
+      <div class="feat reveal">
+        <div class="fic">⚙️</div>
+        <div><h4>It sizes the fleet to your PC</h4><p>A capacity probe reads free memory and computes how many builders to run at once — fast on a big box, safe on a laptop.</p></div>
+      </div>
+      <div class="feat reveal">
+        <div class="fic">↩️</div>
+        <div><h4>Pausable &amp; resumable</h4><p>Across sessions and usage-limit cutoffs — progress is reconciled against a durable <code>state.json</code> + on-disk artifacts.</p></div>
+      </div>
+    </div>
+
+    <div class="gates reveal" style="margin-top:44px">
+      <div class="gate"><span class="gn">🛡️</span><div><b>Gate 1 — Tester</b><span>Inside the loop, every round</span></div></div>
+      <div class="gate"><span class="gn">✅</span><div><b>Gate 2 — Manager</b><span>Final human sign-off</span></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="install">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="kicker">Install</div>
+      <h2>Two lines in Claude Code.</h2>
+      <p>Install as a plugin — one marketplace, one install, auto-updates. The companion toolchain bootstraps itself on first run.</p>
+    </div>
+
+    <div class="code reveal">
+      <div class="code-bar">
+        <span>Claude Code</span>
+        <button class="copy-btn" data-copy="/plugin marketplace add Varalix-Digitech-Solutions/clone-team&#10;/plugin install clone-team@clone-team">Copy</button>
+      </div>
+      <div class="code-body"><pre><span class="cmd">/plugin</span> marketplace add <span class="tok">Varalix-Digitech-Solutions/clone-team</span>
+<span class="cmd">/plugin</span> install <span class="tok">clone-team@clone-team</span></pre></div>
+    </div>
+
+    <p class="install-note reveal">
+      Then just ask: <i>“Clone https://example.com in Next.js, and document how the site is built.”</i>
+      The Manager walks you through stack, scope, login, and model tier — then runs the Workflow in the background.
+    </p>
+
+    <div class="cta-row reveal" style="margin-top:34px">
+      <a class="btn btn-primary" href="https://github.com/Varalix-Digitech-Solutions/clone-team#-install" target="_blank" rel="noopener">Full install guide</a>
+      <a class="btn btn-ghost" href="https://github.com/Varalix-Digitech-Solutions/clone-team/tree/main/case-study/wembi" target="_blank" rel="noopener">Read the case study</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="flinks">
+      <a href="https://github.com/Varalix-Digitech-Solutions/clone-team" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://github.com/Varalix-Digitech-Solutions/clone-team#readme" target="_blank" rel="noopener">README</a>
+      <a href="https://github.com/Varalix-Digitech-Solutions/clone-team/tree/main/case-study/wembi" target="_blank" rel="noopener">Case study</a>
+      <a href="https://github.com/Varalix-Digitech-Solutions/clone-team/blob/main/LICENSE" target="_blank" rel="noopener">MIT License</a>
+      <a href="https://claude.com/claude-code" target="_blank" rel="noopener">Claude Code</a>
+    </div>
+    <p class="copy">
+      Built by <a href="https://github.com/Varalix-Digitech-Solutions" target="_blank" rel="noopener">Varalix Digitech Solutions</a>.
+      Stands on <code>ui-pack</code>, <code>clone-website</code> &amp; <code>agent-browser</code>. © 2026 · MIT.
+    </p>
+  </div>
+</footer>
+
+<script>
+  // nav border on scroll
+  var nav = document.getElementById('nav');
+  var onScroll = function () { nav.classList.toggle('scrolled', window.scrollY > 8); };
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  // staggered scroll reveal
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!reduce && 'IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e, i) {
+        if (e.isIntersecting) {
+          var el = e.target;
+          var delay = Math.min(parseInt(el.dataset.i || '0', 10) * 55, 220);
+          el.style.transitionDelay = delay + 'ms';
+          el.classList.add('in');
+          io.unobserve(el);
+        }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+
+    // group siblings so staggers read per-section
+    document.querySelectorAll('section, header').forEach(function (sec) {
+      var items = sec.querySelectorAll('.reveal');
+      items.forEach(function (el, i) { el.dataset.i = i; io.observe(el); });
+    });
+  } else {
+    document.querySelectorAll('.reveal').forEach(function (el) { el.classList.add('in'); });
+  }
+
+  // copy buttons
+  document.querySelectorAll('.copy-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var text = (btn.dataset.copy || '').replace(/&#10;/g, '\n');
+      navigator.clipboard.writeText(text).then(function () {
+        var old = btn.textContent;
+        btn.textContent = 'Copied ✓';
+        setTimeout(function () { btn.textContent = old; }, 1600);
+      });
+    });
+  });
+</script>
+</body>
+</html>
