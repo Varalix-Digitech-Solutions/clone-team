@@ -6,20 +6,60 @@
 <title>clone-team — Clone any website with a team of AI agents</title>
 <meta name="description" content="A Claude Code skill that orchestrates a team of AI agents to produce a pixel-perfect UI clone of any website AND reverse-engineered architecture docs — with an unskippable test gate." />
 <meta name="author" content="Varalix Digitech Solutions" />
-<link rel="canonical" href="https://varalix-digitech-solutions.github.io/clone-team/" />
+<meta name="robots" content="index, follow, max-image-preview:large" />
+<meta name="keywords" content="website clone, Claude Code skill, AI agents, pixel-perfect UI clone, architecture docs, reverse engineering, multi-agent, frontend automation" />
+<link rel="canonical" href="https://clone-team.varalix.com/" />
 
 <!-- Open Graph / social -->
 <meta property="og:type" content="website" />
 <meta property="og:title" content="clone-team — Clone any website with a team of AI agents" />
 <meta property="og:description" content="Pixel-perfect UI clone + reverse-engineered architecture docs. A Claude Code skill built on the dynamic Workflow engine with an unskippable test gate." />
-<meta property="og:url" content="https://varalix-digitech-solutions.github.io/clone-team/" />
-<meta property="og:image" content="https://varalix-digitech-solutions.github.io/clone-team/media/wembi-hero.png" />
+<meta property="og:url" content="https://clone-team.varalix.com/" />
+<meta property="og:image" content="https://clone-team.varalix.com/media/wembi-hero.png" />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="clone-team — Clone any website with a team of AI agents" />
 <meta name="twitter:description" content="Pixel-perfect UI clone + reverse-engineered architecture docs. A Claude Code skill with an unskippable test gate." />
-<meta name="twitter:image" content="https://varalix-digitech-solutions.github.io/clone-team/media/wembi-hero.png" />
+<meta name="twitter:image" content="https://clone-team.varalix.com/media/wembi-hero.png" />
 
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A7%AC%3C/text%3E%3C/svg%3E" />
+
+<!-- Machine-readable for AI agents / scrapers: what it is + how to install -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "clone-team",
+  "alternateName": "clone-team — Claude Code skill",
+  "applicationCategory": "DeveloperApplication",
+  "operatingSystem": "Claude Code (macOS, Linux, Windows)",
+  "description": "A Claude Code skill that orchestrates a team of AI agents (Manager, Frontend Developer, Backend Architect, Tester) to produce a pixel-perfect UI clone of any website AND a reverse-engineered ARCHITECTURE.md, with an unskippable test gate. Built on the dynamic Workflow engine. Pausable and resumable, login-aware, any front-end stack.",
+  "url": "https://clone-team.varalix.com/",
+  "downloadUrl": "https://github.com/Varalix-Digitech-Solutions/clone-team",
+  "codeRepository": "https://github.com/Varalix-Digitech-Solutions/clone-team",
+  "installUrl": "https://github.com/Varalix-Digitech-Solutions/clone-team#-install",
+  "softwareVersion": "1.0",
+  "license": "https://opensource.org/licenses/MIT",
+  "isAccessibleForFree": true,
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "author": { "@type": "Organization", "name": "Varalix Digitech Solutions", "url": "https://github.com/Varalix-Digitech-Solutions" },
+  "keywords": "website clone, Claude Code skill, AI agents, pixel-perfect, architecture docs, reverse engineering, frontend, multi-agent",
+  "softwareHelp": "https://github.com/Varalix-Digitech-Solutions/clone-team#readme"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "Install clone-team in Claude Code",
+  "description": "Install the clone-team skill as a Claude Code plugin, then ask Claude to clone a site.",
+  "totalTime": "PT1M",
+  "step": [
+    { "@type": "HowToStep", "position": 1, "name": "Add the marketplace", "text": "/plugin marketplace add Varalix-Digitech-Solutions/clone-team" },
+    { "@type": "HowToStep", "position": 2, "name": "Install the plugin", "text": "/plugin install clone-team@clone-team" },
+    { "@type": "HowToStep", "position": 3, "name": "Use it", "text": "Ask Claude Code: Clone https://example.com in Next.js, and document how the site is built." }
+  ]
+}
+</script>
 
 <style>
   :root {
@@ -350,6 +390,19 @@
   }
   .combo img { display: block; width: 100%; height: auto; }
 
+  /* ---------- hero install + bullets ---------- */
+  .install { max-width: 600px; margin: 8px auto 0; text-align: left; }
+  .run-hint { color: var(--ink-faint); font-size: 0.92rem; margin: 16px auto 0; max-width: 600px; }
+  .run-hint i { color: var(--ink-dim); }
+  .bullets {
+    list-style: none; max-width: 760px; margin: 36px auto 0; text-align: left;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 15px 28px;
+  }
+  @media (max-width: 720px) { .bullets { grid-template-columns: 1fr; } }
+  .bullets li { display: flex; gap: 11px; font-size: 0.96rem; color: var(--ink-dim); line-height: 1.5; }
+  .bullets li b { color: var(--ink); font-weight: 620; }
+  .bullets .bi { flex: 0 0 auto; font-size: 1.05rem; line-height: 1.4; }
+
   /* ---------- scroll reveal ---------- */
   .reveal { opacity: 0; transform: translateY(18px); transition: opacity 600ms var(--ease-out), transform 600ms var(--ease-out); }
   .reveal.in { opacity: 1; transform: none; }
@@ -368,10 +421,9 @@
   <div class="wrap">
     <a class="brand" href="#top"><span class="mark">🧬</span> clone-team</a>
     <div class="nav-links">
-      <a class="hide-sm" href="#deliverables">Deliverables</a>
-      <a class="hide-sm" href="#case-studies">Case studies</a>
-      <a class="hide-sm" href="#engine">The engine</a>
       <a class="hide-sm" href="#install">Install</a>
+      <a class="hide-sm" href="#case-studies">Samples</a>
+      <a class="hide-sm" href="#engine">How it works</a>
       <a class="btn btn-ghost btn-sm" href="https://github.com/Varalix-Digitech-Solutions/clone-team" target="_blank" rel="noopener">★ GitHub</a>
     </div>
   </div>
@@ -379,56 +431,40 @@
 
 <header id="top">
   <div class="wrap">
-    <div class="eyebrow reveal"><span class="dot"></span> A Claude Code skill · built on dynamic Workflows</div>
+    <div class="eyebrow reveal"><span class="dot"></span> A Claude Code skill · MIT · built on dynamic Workflows</div>
     <h1 class="reveal">Clone any website with a<br /><span class="grad">team of AI agents.</span></h1>
     <p class="sub reveal">
-      A Manager, a Frontend Developer, a Backend Architect, and a Tester that
-      iteratively build a <b>pixel-perfect UI clone</b> — and produce
-      <b>reverse-engineered architecture docs</b> — in the stack <b>you</b> choose.
+      A Manager, Frontend Developer, Backend Architect &amp; Tester that build a
+      <b>pixel-perfect UI clone</b> of any site <b>and</b> reverse-engineer its
+      <b>architecture docs</b> — in the stack you choose, behind logins, with an
+      unskippable test gate.
     </p>
-    <div class="cta-row reveal">
-      <a class="btn btn-primary" href="https://github.com/Varalix-Digitech-Solutions/clone-team" target="_blank" rel="noopener">
-        ⭐ Star on GitHub
-      </a>
-      <a class="btn btn-ghost" href="#install">Install the skill →</a>
-    </div>
 
-    <div class="hero-media reveal">
-      <div class="media-bar">
-        <span class="tl" style="background:#ff5f57"></span>
-        <span class="tl" style="background:#febc2e"></span>
-        <span class="tl" style="background:#28c840"></span>
+    <div class="code install reveal" id="install">
+      <div class="code-bar">
+        <span>▶ Install in Claude Code</span>
+        <button class="copy-btn" data-copy="/plugin marketplace add Varalix-Digitech-Solutions/clone-team&#10;/plugin install clone-team@clone-team">Copy</button>
       </div>
-      <video src="media/wembi-clone.mp4" poster="media/wembi-clone-poster.jpg" autoplay muted loop playsinline></video>
+      <div class="code-body"><pre><span class="cmd">/plugin</span> marketplace add <span class="tok">Varalix-Digitech-Solutions/clone-team</span>
+<span class="cmd">/plugin</span> install <span class="tok">clone-team@clone-team</span></pre></div>
     </div>
-    <p class="media-cap reveal">
-      A hard target recreated with clone-team: <a href="https://www.wembi.ai/" target="_blank" rel="noopener">wembi.ai</a> —
-      Lenis smooth-scroll + scroll-driven 3D + reveal animations. <a href="#case-studies">See it next to the original →</a>
-    </p>
+    <p class="run-hint reveal">Then just ask: <i>“Clone https://example.com in Next.js, and document how the site is built.”</i></p>
+
+    <ul class="bullets reveal">
+      <li><span class="bi">🎨</span><span><b>Pixel-perfect UI clone</b> in your stack — React, Next.js, Vue, Svelte, Angular, or plain HTML/CSS.</span></li>
+      <li><span class="bi">📐</span><span><b>ARCHITECTURE.md</b> — routes, API/network surface, data model, auth/session flow, user journeys.</span></li>
+      <li><span class="bi">🔒</span><span><b>Unskippable test gate</b> — a Tester runs full regression every round; “done” is a loop condition in code.</span></li>
+      <li><span class="bi">🔀</span><span><b>Scales to the site &amp; your machine</b> — one builder per page, fleet sized to your free memory.</span></li>
+      <li><span class="bi">↩️</span><span><b>Pausable &amp; resumable</b> — survives sessions and usage-limit cutoffs via durable state.</span></li>
+      <li><span class="bi">🔑</span><span><b>Login-aware</b> — clone behind auth; credentials stay in a gitignored local file, never printed.</span></li>
+    </ul>
+
+    <div class="cta-row reveal" style="margin-top:36px">
+      <a class="btn btn-primary" href="https://github.com/Varalix-Digitech-Solutions/clone-team" target="_blank" rel="noopener">⭐ Star on GitHub</a>
+      <a class="btn btn-ghost" href="#case-studies">See real clones ↓</a>
+    </div>
   </div>
 </header>
-
-<section id="deliverables">
-  <div class="wrap">
-    <div class="sec-head reveal">
-      <div class="kicker">Two deliverables, every run</div>
-      <h2>Not just pixels — understanding.</h2>
-      <p>Most "AI clone this site" tools hand you a rough one-shot and call it done. clone-team gives you the clone <i>and</i> the blueprint.</p>
-    </div>
-    <div class="deliverables">
-      <div class="card reveal">
-        <span class="ic">🎨</span>
-        <h3>An exact UI clone</h3>
-        <p>Pixel-perfect, behavior-accurate, in <b>your</b> stack — React, Next.js, Vue, Svelte, Angular, or plain HTML/CSS — independent of the source site's stack.</p>
-      </div>
-      <div class="card reveal">
-        <span class="ic">📐</span>
-        <h3>ARCHITECTURE.md</h3>
-        <p>Routes, observed API/network surface, inferred data model &amp; entities, auth/session flow, state &amp; navigation, and step-by-step user journeys.</p>
-      </div>
-    </div>
-  </div>
-</section>
 
 <section id="case-studies">
   <div class="wrap">
@@ -467,6 +503,28 @@
     </div>
 
     <p class="compare-note reveal">↑ Real screen recordings of the live sites and their clone-team builds — not mockups.</p>
+  </div>
+</section>
+
+<section id="deliverables">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="kicker">Two deliverables, every run</div>
+      <h2>Not just pixels — understanding.</h2>
+      <p>Most "AI clone this site" tools hand you a rough one-shot and call it done. clone-team gives you the clone <i>and</i> the blueprint.</p>
+    </div>
+    <div class="deliverables">
+      <div class="card reveal">
+        <span class="ic">🎨</span>
+        <h3>An exact UI clone</h3>
+        <p>Pixel-perfect, behavior-accurate, in <b>your</b> stack — React, Next.js, Vue, Svelte, Angular, or plain HTML/CSS — independent of the source site's stack.</p>
+      </div>
+      <div class="card reveal">
+        <span class="ic">📐</span>
+        <h3>ARCHITECTURE.md</h3>
+        <p>Routes, observed API/network surface, inferred data model &amp; entities, auth/session flow, state &amp; navigation, and step-by-step user journeys.</p>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -518,29 +576,16 @@
   </div>
 </section>
 
-<section id="install">
+<section id="requirements">
   <div class="wrap">
     <div class="sec-head reveal">
-      <div class="kicker">Install</div>
-      <h2>Two lines in Claude Code.</h2>
-      <p>Install as a plugin — one marketplace, one install, auto-updates. The companion toolchain bootstraps itself on first run.</p>
+      <div class="kicker">Requirements &amp; setup</div>
+      <h2>Install once. It bootstraps the rest.</h2>
+      <p>You need <b>Claude Code</b>, <b>Node.js + npm</b>, and a <b>Chromium</b> browser. Everything else — the
+        companion skills and the <code>agent-browser</code> CLI — installs itself on first run, project-local,
+        so your global setup stays clean.</p>
     </div>
-
-    <div class="code reveal">
-      <div class="code-bar">
-        <span>Claude Code</span>
-        <button class="copy-btn" data-copy="/plugin marketplace add Varalix-Digitech-Solutions/clone-team&#10;/plugin install clone-team@clone-team">Copy</button>
-      </div>
-      <div class="code-body"><pre><span class="cmd">/plugin</span> marketplace add <span class="tok">Varalix-Digitech-Solutions/clone-team</span>
-<span class="cmd">/plugin</span> install <span class="tok">clone-team@clone-team</span></pre></div>
-    </div>
-
-    <p class="install-note reveal">
-      Then just ask: <i>“Clone https://example.com in Next.js, and document how the site is built.”</i>
-      The Manager walks you through stack, scope, login, and model tier — then runs the Workflow in the background.
-    </p>
-
-    <div class="cta-row reveal" style="margin-top:34px">
+    <div class="cta-row reveal">
       <a class="btn btn-primary" href="https://github.com/Varalix-Digitech-Solutions/clone-team#-install" target="_blank" rel="noopener">Full install guide</a>
       <a class="btn btn-ghost" href="https://github.com/Varalix-Digitech-Solutions/clone-team/tree/main/case-study/wembi" target="_blank" rel="noopener">Read the case study</a>
     </div>
