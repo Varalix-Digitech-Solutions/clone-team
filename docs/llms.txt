@@ -1,0 +1,31 @@
+# clone-team
+
+> A Claude Code skill that orchestrates a team of AI agents (Manager, Frontend
+> Developer, Backend Architect, Tester) to produce a pixel-perfect UI clone of any
+> website AND a reverse-engineered ARCHITECTURE.md — with an unskippable test gate.
+> Built on the dynamic Workflow engine. Pausable/resumable, login-aware, any stack.
+
+## Install (in Claude Code)
+/plugin marketplace add Varalix-Digitech-Solutions/clone-team
+/plugin install clone-team@clone-team
+
+## Use
+Ask Claude Code: "Clone https://example.com in Next.js, and document how the site is built."
+
+## What you get
+- Pixel-perfect UI clone in your chosen stack (React, Next.js, Vue, Svelte, Angular, or plain HTML/CSS)
+- ARCHITECTURE.md: routes, observed API/network surface, inferred data model, auth/session flow, user journeys
+
+## Key properties
+- Unskippable Tester gate: the build/test loop is a deterministic Workflow program; "done" is a loop condition in code
+- Scales: one builder per page, fleet sized to host free memory
+- Pausable and resumable across sessions and usage-limit cutoffs (durable state.json)
+- Login-aware: credentials stay in a gitignored local file, never printed or committed
+
+## Requirements
+Claude Code, Node.js + npm, a Chromium browser. Companion skills + agent-browser CLI bootstrap on first run.
+
+## Links
+- Repository: https://github.com/Varalix-Digitech-Solutions/clone-team
+- Website: https://clone-team.varalix.com/
+- License: MIT
