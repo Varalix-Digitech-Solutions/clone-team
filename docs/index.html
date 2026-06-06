@@ -332,7 +332,8 @@
     background: #000; aspect-ratio: 760 / 475;
     box-shadow: 0 20px 50px -28px rgba(0,0,0,0.8);
   }
-  .vid-wrap video { display: block; width: 100%; height: 100%; object-fit: cover; }
+  .vid-wrap video,
+  .vid-wrap img { display: block; width: 100%; height: 100%; object-fit: cover; }
   .tag {
     position: absolute; top: 11px; left: 11px; z-index: 2;
     font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
@@ -444,11 +445,11 @@
       <div class="compare">
         <figure class="vid-wrap">
           <span class="tag tag-orig">Original</span>
-          <video src="media/mubasic-orig.mp4" poster="media/mubasic-orig-poster.jpg" autoplay muted loop playsinline></video>
+          <img src="media/mubasic-orig.gif" loading="lazy" alt="Mubasic original — live site" />
         </figure>
         <figure class="vid-wrap">
           <span class="tag tag-clone">clone-team</span>
-          <video src="media/mubasic-clone.mp4" poster="media/mubasic-clone-poster.jpg" autoplay muted loop playsinline></video>
+          <img src="media/mubasic-clone.gif" loading="lazy" alt="Mubasic clone-team build" />
         </figure>
       </div>
     </div>
@@ -464,11 +465,11 @@
       <div class="compare">
         <figure class="vid-wrap">
           <span class="tag tag-orig">Original</span>
-          <video src="media/wembi-orig.mp4" poster="media/wembi-orig-poster.jpg" autoplay muted loop playsinline></video>
+          <img src="media/wembi-orig.gif" loading="lazy" alt="Wembi original — live site" />
         </figure>
         <figure class="vid-wrap">
           <span class="tag tag-clone">clone-team</span>
-          <video src="media/wembi-clone.mp4" poster="media/wembi-clone-poster.jpg" autoplay muted loop playsinline></video>
+          <img src="media/wembi-clone.gif" loading="lazy" alt="Wembi clone-team build" />
         </figure>
       </div>
     </div>
