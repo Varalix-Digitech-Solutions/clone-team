@@ -179,7 +179,8 @@
     box-shadow: 0 40px 120px -40px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255,255,255,0.02) inset;
     position: relative;
   }
-  .hero-media img { display: block; width: 100%; height: auto; }
+  .hero-media img,
+  .hero-media video { display: block; width: 100%; height: auto; }
   .media-bar {
     display: flex; align-items: center; gap: 7px;
     padding: 11px 14px;
@@ -313,6 +314,36 @@
   footer .copy { color: var(--ink-faint); font-size: 13px; }
   footer .copy a { color: var(--orange-soft); }
 
+  /* ---------- case studies ---------- */
+  .case { margin-bottom: 52px; }
+  .case:last-child { margin-bottom: 0; }
+  .case-head {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    gap: 16px; flex-wrap: wrap; margin-bottom: 16px;
+  }
+  .case-head h3 { font-size: 1.35rem; font-weight: 650; letter-spacing: -0.015em; }
+  .case-head .meta { color: var(--ink-faint); font-size: 0.88rem; margin-top: 2px; }
+  .case-head .meta code { color: var(--purple-soft); font-family: var(--mono); font-size: 0.82rem; }
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 720px) { .compare { grid-template-columns: 1fr; } }
+  .vid-wrap {
+    position: relative; margin: 0;
+    border: 1px solid var(--border); border-radius: 12px; overflow: hidden;
+    background: #000; aspect-ratio: 760 / 475;
+    box-shadow: 0 20px 50px -28px rgba(0,0,0,0.8);
+  }
+  .vid-wrap video { display: block; width: 100%; height: 100%; object-fit: cover; }
+  .tag {
+    position: absolute; top: 11px; left: 11px; z-index: 2;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+    padding: 5px 11px; border-radius: 7px; backdrop-filter: blur(8px);
+  }
+  .tag-orig { background: rgba(18, 18, 22, 0.72); color: var(--ink-dim); border: 1px solid var(--border); }
+  .tag-clone { background: rgba(217, 119, 87, 0.92); color: #1a0f0a; }
+  .compare-note {
+    text-align: center; color: var(--ink-faint); font-size: 0.85rem; margin-top: 36px;
+  }
+
   /* ---------- scroll reveal ---------- */
   .reveal { opacity: 0; transform: translateY(18px); transition: opacity 600ms var(--ease-out), transform 600ms var(--ease-out); }
   .reveal.in { opacity: 1; transform: none; }
@@ -332,6 +363,7 @@
     <a class="brand" href="#top"><span class="mark">🧬</span> clone-team</a>
     <div class="nav-links">
       <a class="hide-sm" href="#deliverables">Deliverables</a>
+      <a class="hide-sm" href="#case-studies">Case studies</a>
       <a class="hide-sm" href="#engine">The engine</a>
       <a class="hide-sm" href="#install">Install</a>
       <a class="btn btn-ghost btn-sm" href="https://github.com/Varalix-Digitech-Solutions/clone-team" target="_blank" rel="noopener">★ GitHub</a>
@@ -361,11 +393,11 @@
         <span class="tl" style="background:#febc2e"></span>
         <span class="tl" style="background:#28c840"></span>
       </div>
-      <img src="media/wembi-scroll.gif" alt="clone-team recreating a scroll-driven site in real time" loading="lazy" />
+      <video src="media/wembi-clone.mp4" poster="media/wembi-clone-poster.jpg" autoplay muted loop playsinline></video>
     </div>
     <p class="media-cap reveal">
       A hard target recreated with clone-team: <a href="https://www.wembi.ai/" target="_blank" rel="noopener">wembi.ai</a> —
-      Lenis smooth-scroll + scroll-driven video + reveal animations.
+      Lenis smooth-scroll + scroll-driven 3D + reveal animations. <a href="#case-studies">See it next to the original →</a>
     </p>
   </div>
 </header>
@@ -389,6 +421,59 @@
         <p>Routes, observed API/network surface, inferred data model &amp; entities, auth/session flow, state &amp; navigation, and step-by-step user journeys.</p>
       </div>
     </div>
+  </div>
+</section>
+
+<section id="case-studies">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="kicker">Real case studies</div>
+      <h2>Original vs. clone — side by side.</h2>
+      <p>Not cherry-picked stills. In each pair, the <b style="color:var(--ink)">live site</b> is on the left and the
+        <b style="color:var(--orange-soft)">clone-team build</b> is on the right — captured the same way, same viewport.</p>
+    </div>
+
+    <div class="case reveal">
+      <div class="case-head">
+        <div>
+          <h3>🎵 Mubasic</h3>
+          <p class="meta">Animated split-hero · GSAP sliding letter-bars · <code>mubasic-test.webflow.io</code></p>
+        </div>
+        <a class="btn btn-ghost btn-sm" href="https://mubasic-test.webflow.io/" target="_blank" rel="noopener">Visit original ↗</a>
+      </div>
+      <div class="compare">
+        <figure class="vid-wrap">
+          <span class="tag tag-orig">Original</span>
+          <video src="media/mubasic-orig.mp4" poster="media/mubasic-orig-poster.jpg" autoplay muted loop playsinline></video>
+        </figure>
+        <figure class="vid-wrap">
+          <span class="tag tag-clone">clone-team</span>
+          <video src="media/mubasic-clone.mp4" poster="media/mubasic-clone-poster.jpg" autoplay muted loop playsinline></video>
+        </figure>
+      </div>
+    </div>
+
+    <div class="case reveal">
+      <div class="case-head">
+        <div>
+          <h3>🧬 Wembi</h3>
+          <p class="meta">Lenis smooth-scroll · scroll-driven 3D · reveal animations · <code>wembi.ai</code></p>
+        </div>
+        <a class="btn btn-ghost btn-sm" href="https://www.wembi.ai/" target="_blank" rel="noopener">Visit original ↗</a>
+      </div>
+      <div class="compare">
+        <figure class="vid-wrap">
+          <span class="tag tag-orig">Original</span>
+          <video src="media/wembi-orig.mp4" poster="media/wembi-orig-poster.jpg" autoplay muted loop playsinline></video>
+        </figure>
+        <figure class="vid-wrap">
+          <span class="tag tag-clone">clone-team</span>
+          <video src="media/wembi-clone.mp4" poster="media/wembi-clone-poster.jpg" autoplay muted loop playsinline></video>
+        </figure>
+      </div>
+    </div>
+
+    <p class="compare-note reveal">↑ Real screen recordings of the live sites and their clone-team builds — not mockups.</p>
   </div>
 </section>
 
