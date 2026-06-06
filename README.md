@@ -6,10 +6,13 @@
 
 A [Claude Code](https://claude.com/claude-code) **skill** that orchestrates a **Manager**, **Frontend Developer**, **Backend Architect**, and **Tester** to produce a **pixel-perfect UI clone** *and* a reverse-engineered **`ARCHITECTURE.md`** — in the stack *you* choose.
 
+[![Website](https://img.shields.io/badge/Website-clone--team.varalix.com-2563eb)](https://clone-team.varalix.com)
 [![Claude Code Skill](https://img.shields.io/badge/Claude%20Code-Skill-d97757)](https://claude.com/claude-code)
 [![Built on Dynamic Workflows](https://img.shields.io/badge/Built%20on-Dynamic%20Workflows-7c3aed)](#-the-engine-a-dynamic-workflow)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](#-contributing)
+
+**🌐 Website, demos & docs → [clone-team.varalix.com](https://clone-team.varalix.com)**
 
 **If this saves you a week of pixel-pushing, drop a ⭐ — it genuinely helps.**
 
