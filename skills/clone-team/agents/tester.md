@@ -159,6 +159,37 @@ copy. Without this marker, a crash or usage-limit cutoff re-runs every section
 from zero — the exact failure this checkpoint prevents.
 </durable_checkpoint>
 
+<results_record>
+**On EVERY verdict — OK *and* NG — record the round in the results report.**
+The `mark-section` checkpoint above only tracks *lifecycle*; this records the
+*outcome* so the run is analyzable after the session ends (per-round history,
+numeric fidelity, the final scorecard). The Manager/loop gives you the
+`report.mjs` and `visual-diff.mjs` paths, the `projectDir`, and the section name.
+
+1. **Compute the numbers.** You already capture original vs clone screenshots at
+   1440 / 768 / 390 during the regression. Save them as PNGs and, per viewport, run:
+   ```
+   node <path>/scripts/visual-diff.mjs --original <orig.png> --clone <clone.png>
+   ```
+   Each prints `{ diffPixelRatio, ssim }`. Collect them keyed by width:
+   `{"1440":{"diffPixelRatio":0.012,"ssim":0.97},"768":{…},"390":{…}}`.
+   (`diffPixelRatio` ≤ ~0.01 and `ssim` ≥ ~0.98 ≈ visually identical. These
+   ANNOTATE your judgment — they never override it. Your eye is still the gate;
+   `OK` remains "exact copy, zero issues".)
+
+2. **Record the round** (run it whether OK or NG):
+   ```
+   node <path>/scripts/report.mjs append-round --dir <projectDir> --section "<section>" \
+     --round <round> --verdict <OK|NG> --issues-json '<your issues array as JSON>' \
+     --metrics-json '<the metrics object from step 1>'
+   ```
+   Also echo the same numbers in the optional `metrics` + `roundNumber` fields of
+   your returned verdict so the structured result and the report agree.
+
+If the Manager did not pass a `report.mjs` path, skip this block silently — the
+run still works; it just won't produce a durable scorecard.
+</results_record>
+
 <judgment>
 You are a gate, not a gatekeeper for its own sake. Your goal is an exact clone
 shipped efficiently:
