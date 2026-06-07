@@ -73,6 +73,11 @@ function defaultState() {
     sections: [],
     backend: { status: 'pending', docPath: 'docs/research/ARCHITECTURE.md' },
     flagged: [],
+    // Run outcome (set by the Manager on completion; the rich per-round results
+    // live in the companion .clone-team/report.json written by report.mjs).
+    finalVerdict: 'not-run',
+    completedAt: null,
+    reportPath: '.clone-team/report.json',
     updatedAt: nowIso(),
   }
 }
@@ -108,6 +113,10 @@ switch (cmd) {
   }
   case 'status': {
     const s = readState()
+    // Machine-readable mode: `status --json` prints the whole state object so
+    // tools (a results dashboard, CI, the /clone-report command) can parse it
+    // instead of screen-scraping the human lines below.
+    if (args.json) { console.log(JSON.stringify(s)); break }
     const by = (st) => s.sections.filter(x => x.status === st).map(x => x.name)
     console.log(`clone-team status — ${stateFile}`)
     console.log(`  goal:    ${s.goal || '(unset)'}`)
@@ -125,6 +134,7 @@ switch (cmd) {
     console.log(`     pending:  ${by('pending').length}  ${by('pending').join(', ')}`)
     console.log(`     flagged:  ${by('flagged').length}  ${by('flagged').join(', ')}`)
     console.log(`  backend:  ${s.backend?.status} -> ${s.backend?.docPath}`)
+    console.log(`  outcome:  finalVerdict=${s.finalVerdict || 'not-run'}${s.completedAt ? `  completed=${s.completedAt}` : ''}`)
     break
   }
   case 'set': {
