@@ -53,7 +53,8 @@ it* and is disposable (JSON-then-render convention).
     }
   ],
   "backend": { "coverage": "substantial", "gaps": [ … ], "docPath": "…" },
-  "artifacts": { "html": ".clone-team/report.html" }
+  "artifacts": { "html": ".clone-team/report.html" },
+  "updatedAt": "ISO"               // stamped on every write (init/append-round/finalize/render)
 }
 ```
 
@@ -125,7 +126,7 @@ canonical mapping:
 | `OK` / `NG` | Tester verdict, `VERDICT_SCHEMA`, report rounds | section/page is / isn't an exact copy this round |
 | `pass` | Workflow `sectionResults[].status`, report `section.status` | section cleared the gate (≡ state's `done`) |
 | `done` | `state.json` section status | gate-cleared **and** file on disk (lifecycle) |
-| `flagged` | both | hit the round cap; needs Manager attention |
+| `flagged` | both | in `report.json`, the **default** `section.status` for any not-yet-passing (NG) section — `report.mjs append-round` sets `pass` on an OK round, else `flagged`. The round-cap escalation in `state.json` is the explicit case, set via `--section-status flagged` (and `state.mjs`'s `flagged[]` list). So a section at NG mid-run already reads `flagged`; passing it flips it to `pass`. |
 | `not-run` | `finalVerdict` | assembly was skipped / run never finalized |
 
 `pass` (outcome) and `done` (lifecycle) are the same event seen from two files.
