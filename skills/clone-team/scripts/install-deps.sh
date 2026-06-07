@@ -63,6 +63,21 @@ else
   failed+=("agent-browser — npm not found; install Node/npm then: npm i -g agent-browser")
 fi
 
+# --- 1b) results-analysis node deps (npm, local to scripts/) ---------------
+# report.mjs / visual-diff.mjs need pixelmatch + pngjs + ssim.js (all pure-JS).
+# Installed LOCALLY into this scripts dir so they never pollute the cloned
+# project. Idempotent: skip if node_modules already present.
+if [ -d "$SCRIPT_DIR/node_modules/pixelmatch" ] && [ -d "$SCRIPT_DIR/node_modules/ssim.js" ]; then
+  skipped+=("results-analysis npm deps (already present)")
+elif [ "$CHECK" = "1" ]; then
+  missing+=("results-analysis npm deps (cd scripts && npm install)")
+elif command -v npm >/dev/null 2>&1; then
+  echo "Installing results-analysis npm deps (pixelmatch, pngjs, ssim.js)..."
+  if ( cd "$SCRIPT_DIR" && npm install --omit=dev >/dev/null 2>&1 ); then installed+=("results-analysis npm deps"); else failed+=("results-analysis npm deps — try: cd $SCRIPT_DIR && npm install"); fi
+else
+  failed+=("results-analysis npm deps — npm not found; install Node/npm then: cd $SCRIPT_DIR && npm install")
+fi
+
 # --- 2) ui-pack wrapper (vendored with this skill) -------------------------
 # ui-pack is the design/frontend bundle the agents load. It ships inside this
 # repo (../vendor/ui-pack) so it's always available without a second repo.

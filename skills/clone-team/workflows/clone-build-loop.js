@@ -59,6 +59,8 @@ const credsLine = A.credsFilePath
   : 'No login required for the target.'
 const appInsights = A.appInsights || 'none reported'
 const statePath = A.statePath || '' // absolute path to scripts/state.mjs (durable checkpoint CLI)
+const reportPath = A.reportPath || '' // absolute path to scripts/report.mjs (durable results record)
+const visualDiffPath = A.visualDiffPath || '' // absolute path to scripts/visual-diff.mjs (numeric visual metrics)
 const research = A.paths?.research || 'docs/research'
 const components = A.paths?.components || 'docs/research/components'
 const designRefs = A.paths?.designRefs || 'docs/design-references'
@@ -182,6 +184,13 @@ const VERDICT_SCHEMA = {
       },
     },
     notes: { type: 'string' },
+    // Optional results-analysis annotations (backward-compatible — not required).
+    // roundNumber lets the verdict self-identify its build round; metrics carries
+    // the numeric visual-fidelity readings (per viewport) the Tester computed via
+    // visual-diff.mjs. The enforced source of truth is still the report.mjs CLI;
+    // these just let the structured verdict echo what was recorded.
+    roundNumber: { type: 'integer', description: 'the build round this verdict is for (1-based)' },
+    metrics: { type: 'object', description: 'per-viewport { diffPixelRatio, ssim } from visual-diff.mjs, keyed by width (e.g. "1440")' },
   },
 }
 
@@ -282,7 +291,7 @@ The Developer reports: ${build?.summary || '(no summary)'} — files: ${(build?.
 Reference spec: \`${spec?.specPath || ''}\`. MOTION spec (the animated-element inventory + state matrix authored by the Motion Analyst, then built by the Motion Developer): \`${motionPathFor(s)}\`.
 CROSS-CHECK THE MOTION SPEC: every element it inventories MUST animate in the clone — right text/section rendered STATIC where the original animates it is an NG; every state-matrix entry (hover, keyboard focus, active, loading, disabled) must match; and scroll-scrubbed + continuous-decorative ("glittery" shimmer/particles/grain/canvas) motion must be DRIVEN to confirm it fires (a still frame can't prove it). Check the load-intro with a COLD reload.
 Run the full regression: open the ORIGINAL and the CLONE side by side via agent-browser at 1440/768/390; diff visually pixel by pixel. For EVERY scroll-/time-/hover-/click-driven behavior, DRIVE it and diff the STATE TRAJECTORY against the original — a static screenshot cannot prove motion (a frozen page looks identical in a still frame). Scroll in increments and read the animated state (transform/height/opacity/active-index/visible image) at each step on both; confirm scrolling actually TRIGGERS the change (image cycling, shape morph, elements animating in from below), with matching trigger thresholds, direction, and easing/cadence — missing or frozen animation is an NG. Confirm build + typecheck pass AND the page runs as SHIPPED (serve a clean copy / static server — a page that needs an uncommitted build artifact or breaks when copied is an NG). Do not rubber-stamp — you are the gate. Return verdict OK only if it is an exact copy; otherwise NG with specific, reproducible issues the Developer can fix directly.
-${statePath ? `\n## DURABLE CHECKPOINT (mandatory on OK — do this BEFORE you return)\nThe moment your verdict is OK, run exactly:\n\`node ${statePath} mark-section --dir ${projectDir} --name "${s.name}" --status done --rounds ${'<the round number you approved>'}\`\nThis writes the durable \`done\` marker so a crash or usage-cutoff resumes without redoing this approved section. NEVER run it on NG. This is the single thing that makes the run survivable — do not skip it.\n` : ''}`
+${statePath ? `\n## DURABLE CHECKPOINT (mandatory on OK — do this BEFORE you return)\nThe moment your verdict is OK, run exactly:\n\`node ${statePath} mark-section --dir ${projectDir} --name "${s.name}" --status done --rounds ${'<the round number you approved>'}\`\nThis writes the durable \`done\` marker so a crash or usage-cutoff resumes without redoing this approved section. NEVER run it on NG. This is the single thing that makes the run survivable — do not skip it.\n` : ''}${reportPath ? `\n## RESULTS RECORD (mandatory EVERY round — OK *and* NG)\n${visualDiffPath ? `First compute the numbers. You already screenshot the ORIGINAL and CLONE at 1440/768/390 above — save those as PNGs and, for each viewport, run:\n\`node ${visualDiffPath} --original <orig-WxH.png> --clone <clone-WxH.png>\`\nEach prints \`{ diffPixelRatio, ssim }\`. Collect them into one object keyed by width, e.g. \`{"1440":{"diffPixelRatio":0.012,"ssim":0.97},"768":{...},"390":{...}}\`.\n` : ''}Then record this round (run it whether the verdict is OK or NG — this is what makes the run analyzable after the session ends):\n\`node ${reportPath} append-round --dir ${projectDir} --section "${s.name}" --round ${'<this round number>'} --verdict ${'<OK|NG>'} --issues-json '${'<the issues array, exactly as in your verdict, as JSON>'}'${visualDiffPath ? ` --metrics-json '${'<the metrics object you collected>'}'` : ''}\`\nAlso put the same metrics into the optional \`metrics\` and \`roundNumber\` fields of your returned verdict.\n` : ''}`
 
 const backendPrompt = () => `${BACKEND_PERSONA}
 
@@ -305,7 +314,7 @@ const finalRegressionPrompt = (round) => `${TESTER_PERSONA}
 ${CONTEXT}
 
 ## Task: FINAL FULL-PAGE REGRESSION (round ${round}) — the last automated gate
-Open the ORIGINAL and the assembled CLONE side by side via agent-browser. Walk the entire page(s) top to bottom at 1440/768/390. Verify it is an EXACT copy end to end: every section in place, page-level behaviors correct (scroll, sticky headers, transitions, smooth scroll), every flow working, build clean. Return OK only if the whole thing is indistinguishable from the original; otherwise NG with specific, reproducible issues.`
+Open the ORIGINAL and the assembled CLONE side by side via agent-browser. Walk the entire page(s) top to bottom at 1440/768/390. Verify it is an EXACT copy end to end: every section in place, page-level behaviors correct (scroll, sticky headers, transitions, smooth scroll), every flow working, build clean. Return OK only if the whole thing is indistinguishable from the original; otherwise NG with specific, reproducible issues.${reportPath ? `\n\n## RESULTS RECORD (mandatory EVERY final round — OK *and* NG)\n${visualDiffPath ? `Compute full-page numbers: screenshot the ORIGINAL and the assembled CLONE at 1440/768/390 and run \`node ${visualDiffPath} --original <orig.png> --clone <clone.png>\` per viewport; collect into one object keyed by width.\n` : ''}Record this final round under the pseudo-section "Full Page":\n\`node ${reportPath} append-round --dir ${projectDir} --section "Full Page" --round ${round} --verdict ${'<OK|NG>'} --issues-json '${'<the issues array as JSON>'}'${visualDiffPath ? ` --metrics-json '${'<the metrics object>'}'` : ''}\`\n` : ''}`
 
 // --- The enforced loop ------------------------------------------------------
 
