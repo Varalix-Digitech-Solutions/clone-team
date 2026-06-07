@@ -1,0 +1,15 @@
+{
+  "name": "clone-team-scripts",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Durable state, capacity probe, and results-analysis helpers for the clone-team skill.",
+  "scripts": {
+    "test": "node --test"
+  },
+  "dependencies": {
+    "pixelmatch": "^6.0.0",
+    "pngjs": "^7.0.0",
+    "ssim.js": "^3.5.0"
+  }
+}
