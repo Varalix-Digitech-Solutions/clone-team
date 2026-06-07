@@ -294,6 +294,16 @@ runs the canonical text (it embeds tight capsules as a fallback). Run the
 **Backend Architect track in parallel** with the section loop. The Developer may
 spawn its own sub-builders for complex sections — that's expected and good.
 
+**Pass the durable-tooling paths in `args`** so the agents can persist results
+(the Workflow runtime itself cannot write files): `args.statePath` →
+`scripts/state.mjs` (lifecycle checkpoint), `args.reportPath` →
+`scripts/report.mjs` (results record), `args.visualDiffPath` →
+`scripts/visual-diff.mjs` (numeric fidelity). With these set, the Tester records
+every round (OK and NG) into `.clone-team/report.json`. **Before launching, run
+`node scripts/report.mjs init --dir <projectDir> --run-id <wf id> --goal <goal>
+--target <url> --stack <stack>`** to start the report. See
+`references/results-analysis.md` for the full schema and wiring.
+
 **Before launching, size the wave to the host.** Run `node scripts/capacity.mjs
 --wave` and pass the number as `runConfig.waveSize` (with `skipAssembly: true` so
 the Manager assembles in Phase 3). This caps how many sections build at once so a
@@ -357,10 +367,23 @@ If you ever come back to an existing clone project and the user just says
 
 ## Completion report
 
-When done, report: stack used; pages/sections built; components + spec files
-written; assets downloaded; build status; visual-QA result at each viewport;
-the path to the architecture documentation; any flagged sections or known gaps;
-and the final `state.json` location so the run is auditable and re-openable.
+When done, **finalize and render the results report first**, then summarize:
+
+```
+node scripts/report.mjs finalize --dir <projectDir> --final-verdict <OK|NG> \
+  --summary-json '<the Workflow return `summary`, as JSON>'
+node scripts/report.mjs render --dir <projectDir>
+node scripts/state.mjs set --dir <projectDir> --key finalVerdict --value <OK|NG>
+```
+
+The Workflow return is ephemeral — `finalize` is what writes the run's outcome
+to disk. Then **auto-open `<projectDir>/.clone-team/report.html`** for the user.
+
+Then report: stack used; pages/sections built; components + spec files written;
+assets downloaded; build status; visual-QA result at each viewport; the path to
+the architecture documentation; any flagged sections or known gaps; the
+`report.html` + `state.json` locations; and a pointer to `/clone-report` to
+re-open the scorecard anytime. The run is auditable and re-openable.
 
 ## Reference map
 
@@ -375,6 +398,10 @@ and the final `state.json` location so the run is auditable and re-openable.
   token templates, craft + performance rules, and the drive-to-verify recipe.
   Self-contained fallback when `ui-animation` isn't installed. **Read before the
   motion track.**
+- `references/results-analysis.md` — the consistent results layer: `report.json`
+  schema, the visual metrics (pixel-diff % + SSIM) and their thresholds, the
+  verdict vocabulary, and how `report.mjs` / `visual-diff.mjs` / `/clone-report`
+  wire together. **Read before Phase 2 if you want the scorecard.**
 - `references/backend-doc-template.md` — the structure of the documentation
   deliverable the Backend Architect produces.
 - `agents/frontend-developer.md`, `agents/interaction-motion-analyst.md`,
