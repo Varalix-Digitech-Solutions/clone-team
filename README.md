@@ -74,7 +74,7 @@ Two gates protect quality — the **Tester** (inside the loop) and the **Manager
 /plugin install clone-team@clone-team
 ```
 
-That's it — the skill and the `/clone-status`, `/clone-pause`, `/clone-resume` commands are registered automatically. (Restart Claude Code if the commands don't show up immediately.)
+That's it — the skill and the `/clone-status`, `/clone-pause`, `/clone-resume`, `/clone-report`, and `/clone-update` commands are registered automatically. Plugin installs **auto-update** when a new version ships; run `/clone-update` anytime to check what you're on vs. the latest. (Restart Claude Code if the commands don't show up immediately.)
 
 **You don't install the companion skills yourself.** The first time you run a clone, clone-team **bootstraps its own toolchain** — it runs a bundled, idempotent installer that fetches the `agent-browser` CLI and the companion skills (`ui-pack` and friends, `ui-animation`) **project-local** (into `./.claude/skills`, so your global skills stay clean), skipping anything already present. Just install the plugin and ask it to clone a site; it sets itself up and then gets to work. See [Dependencies](#-dependencies).
 
