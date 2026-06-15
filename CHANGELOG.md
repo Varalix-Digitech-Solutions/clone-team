@@ -6,6 +6,24 @@ All notable changes to **clone-team** are recorded here. The format follows
 in `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json`; plugin
 installs update automatically when these bump.
 
+## [1.3.0]
+
+### Added
+- **`karpathy-guidelines` behavioral skill, loaded by every agent and the
+  Manager** — a single-file discipline (think before coding, simplicity first,
+  surgical changes, goal-driven execution) derived from Andrej Karpathy's notes
+  on LLM coding pitfalls. Wired into all five agent personas, the build-loop
+  Workflow capsules, and the dependency installer. Degrades gracefully — the
+  four principles apply even when the skill isn't installed.
+- **Preflight update-availability nudge** — on the first run in a project the
+  Manager compares the installed version against the latest on `main` and prints
+  a one-line `/clone-update` hint if behind. Fail-soft and once-per-project; never
+  blocks, prompts, or auto-updates.
+
+### Changed
+- `CLAUDE.md` documents the release version-bump checklist (the three machine-read
+  version spots + changelog) so a release never silently ships nothing.
+
 ## [1.2.0]
 
 ### Added
@@ -52,6 +70,7 @@ installs update automatically when these bump.
   driven by a deterministic background Workflow with an unskippable test gate and
   first-class pause/resume/recovery.
 
+[1.3.0]: https://github.com/Varalix-Digitech-Solutions/clone-team/releases/tag/v1.3.0
 [1.2.0]: https://github.com/Varalix-Digitech-Solutions/clone-team/releases/tag/v1.2.0
 [1.1.0]: https://github.com/Varalix-Digitech-Solutions/clone-team/releases/tag/v1.1.0
 [1.0.0]: https://github.com/Varalix-Digitech-Solutions/clone-team/releases/tag/v1.0.0
