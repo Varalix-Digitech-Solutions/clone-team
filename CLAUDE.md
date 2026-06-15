@@ -73,7 +73,13 @@ evals/
   edit a persona, edit the `agents/*.md` file.
 - **Every agent loads `ui-pack` first** and verifies via `agent-browser`. This is
   baked into every persona; keep it there. The two motion agents additionally load
-  `ui-animation` (degrading to `references/motion-playbook.md`).
+  `ui-animation` (degrading to `references/motion-playbook.md`). **Every agent —
+  and the Manager — also loads `karpathy-guidelines`** (behavioral discipline:
+  think-before-coding / simplicity / surgical-changes / goal-driven). It's baked
+  into each `agents/*.md` first_move, the Workflow capsules (`KARPATHY` const,
+  injected into every persona), and the installer's `DEPS` list. Degrades
+  gracefully — the four principles apply even uninstalled. Don't make any agent
+  hard-depend on it.
 - **Dependencies are self-bootstrapping; `ui-pack` is vendored, not external.**
   `ui-pack` is a thin **wrapper** skill (loads `clone-website`, `ui-ux-pro-max`,
   `impeccable`, `emil-design-eng` + points at the `agent-browser` CLI). It is
@@ -142,6 +148,33 @@ resume with the `/clone-*` commands if you hit limits mid-eval.
 
 After meaningful edits, also run skill-creator's description optimizer to keep
 triggering sharp.
+
+## Releasing — bump the version (multiple points, never miss one)
+
+This skill is published as a Claude Code **plugin**. Claude Code caches each
+install by version and **only offers an update when the `version` string changes**
+— pushing new commits to `main` *without* a version bump ships **nothing** to
+existing users. So a release is not "merge to main"; it's "bump the version,
+then merge to main." The version lives in **three** machine-read spots that must
+stay identical, plus the human-facing changelog:
+
+1. `.claude-plugin/plugin.json` → `"version"` — **the one the plugin system reads
+   for update detection.** If only one gets bumped, it must be this. Bump all
+   three anyway.
+2. `.claude-plugin/marketplace.json` → the plugin entry's `"version"` (the
+   `plugins[]` item).
+3. `.claude-plugin/marketplace.json` → the marketplace `metadata.version`.
+4. `CHANGELOG.md` → add a new `## [x.y.z]` section + the dated link at the bottom.
+   (Not read by the plugin system, but it's the release story and the
+   `/clone-update` changelog link.)
+
+The Preflight **update nudge** in `SKILL.md` and the `/clone-update` command both
+compare against `plugin.json`'s `version` on `main` — so bumping it is also what
+makes those two surface the update. One rule covers everything: **bump the
+version.** A GitHub Release/tag is *not* required and does *not* trigger updates
+— the `version` field on the default branch is the trigger; the merge is the
+publish. Verify the three JSON spots match after editing
+(`grep -rn '"version"' .claude-plugin/`).
 
 ## Provenance
 

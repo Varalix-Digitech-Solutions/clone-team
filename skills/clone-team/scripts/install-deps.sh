@@ -99,6 +99,7 @@ DEPS=(
   "emilkowalski/skill|main|skills|emil-design-eng"
   "mblode/agent-skills|main|skills|ui-animation"
   "nextlevelbuilder/ui-ux-pro-max-skill|main|.claude/skills|*"
+  "multica-ai/andrej-karpathy-skills|main|skills|karpathy-guidelines"
 )
 
 for entry in "${DEPS[@]}"; do

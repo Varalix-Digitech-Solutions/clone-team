@@ -58,7 +58,12 @@ UI through `agent-browser`. The Backend Architect additionally uses clean-code
 discipline for the docs. **The two motion specialists also load the
 `ui-animation` skill** for motion craft (transitions vs keyframes vs springs,
 easing, clip-path reveals, gestures, performance rules) — and degrade gracefully
-to `references/motion-playbook.md` when it isn't installed. These instructions
+to `references/motion-playbook.md` when it isn't installed. **Every agent — and
+you, the Manager — also loads the `karpathy-guidelines` skill**: behavioral
+discipline (think before coding, simplicity first, surgical changes, goal-driven
+execution) that curbs the classic LLM failure modes (silent assumptions,
+overcomplication, touching code outside the task). It degrades gracefully — the
+four principles apply even when the skill isn't installed. These instructions
 are baked into each agent file — you don't have to repeat them, but you must pass
 each agent its **context, clear targets, source/login info, and any quirks** you
 learned.
@@ -156,8 +161,9 @@ By default it installs the skills **project-local**, into `<PROJECT_ROOT>/.claud
 `--global` only if the user explicitly wants them installed globally.) It installs:
 **`ui-pack`** (the design/frontend bundle,
 vendored with this skill), its constituents (**`clone-website`**,
-**`ui-ux-pro-max`**, **`impeccable`**, **`emil-design-eng`**), and
-**`ui-animation`** (motion craft for the two motion specialists). The
+**`ui-ux-pro-max`**, **`impeccable`**, **`emil-design-eng`**),
+**`ui-animation`** (motion craft for the two motion specialists), and
+**`karpathy-guidelines`** (behavioral discipline loaded by every agent). The
 `agent-browser` CLI is installed globally via npm (it's a command-line tool, not
 a skill).
 
@@ -171,6 +177,40 @@ blocker, and if a just-installed skill isn't hot-loaded mid-session, the files a
 on disk and **every persona degrades gracefully** to the bundled `references/*.md`
 plus the `agent-browser` CLI, so the run still works (a re-invoke picks the skills
 up fully).
+
+### Update nudge (once per project, fail-soft, non-blocking)
+
+Right after the installer, do a **single** lightweight version check so the user
+learns about a newer release without having to remember `/clone-update`. This is
+purely informational — it **never blocks, prompts, or auto-updates**, and it runs
+**once per project** (skip it if the marker below already exists).
+
+```bash
+# Skip if already checked for this project (once-per-project).
+MARK="<PROJECT_ROOT>/.clone-team/.update-checked"
+if [ ! -f "$MARK" ]; then
+  # LOCAL: installed version from the nearest plugin manifest (unknown if absent).
+  LOCAL=$(grep -m1 '"version"' "<SKILL_DIR>/../.claude-plugin/plugin.json" 2>/dev/null \
+          | sed -E 's/.*"version"[^"]*"([^"]+)".*/\1/')
+  # LATEST: canonical version on the default branch (no clone needed). Fail-soft.
+  LATEST=$(gh api repos/Varalix-Digitech-Solutions/clone-team/contents/.claude-plugin/plugin.json \
+             --jq '.content' 2>/dev/null | base64 -d 2>/dev/null | grep -m1 '"version"' \
+             | sed -E 's/.*"version"[^"]*"([^"]+)".*/\1/')
+  mkdir -p "$(dirname "$MARK")" && : > "$MARK"   # mark checked regardless of outcome
+  printf 'LOCAL=%s LATEST=%s\n' "${LOCAL:-unknown}" "${LATEST:-unknown}"
+fi
+```
+
+Interpret the output and act **only** if there's something to say:
+- If both versions resolved and `LOCAL` ≠ `LATEST` (local is behind), print **one**
+  line and move on — do not stop, do not ask:
+  > ⚠️ clone-team update available — installed `vLOCAL`, latest `vLATEST`. Run
+  > `/clone-update` to upgrade. ([changelog](https://github.com/Varalix-Digitech-Solutions/clone-team/blob/main/CHANGELOG.md))
+- If they match, `gh`/network is unavailable, or either side is `unknown` — **say
+  nothing** and proceed. Offline or a bare manual copy must never produce noise or
+  delay. (Plugin installs already surface updates through Claude Code's `/plugin`
+  system, so this nudge is mainly for manual installs; the line above is still
+  correct for both — `/clone-update` routes plugin users to `/plugin`.)
 
 ## Phase 0 — Setup & Requirements (interactive, you + the user)
 

@@ -31,6 +31,14 @@ the extraction scripts + spec template, and whichever of `emil-design-eng` /
 - apply `impeccable` / `emil-design-eng` taste only where the original itself is
   tasteful; this is emulation, not redesign.
 
+**Also load the `karpathy-guidelines` skill** — the clone-team's behavioral
+discipline for every agent: *think before coding* (state assumptions, surface
+tradeoffs, ask when unclear instead of guessing), *simplicity first* (the minimum
+code that solves it — no speculative abstractions or unrequested flexibility),
+*surgical changes* (touch only what the task requires; match existing style), and
+*goal-driven execution* (verifiable success criteria, loop until they pass). If
+it isn't installed, apply the four principles from memory anyway.
+
 Also read `./CLAUDE.md` if present and follow project conventions.
 </first_move>
 

@@ -25,7 +25,15 @@ design skills to judge UX quality. **If `ui-pack` is not installed, degrade
 gracefully (do not abort):** use the `agent-browser` CLI directly (run
 `agent-browser skills get core --full` once for its command guide) plus whichever
 of `emil-design-eng` / `ui-ux-pro-max` are installed. Either way, real-browser
-observation is mandatory. Read `./CLAUDE.md` if present.
+observation is mandatory.
+
+**Also load the `karpathy-guidelines` skill** — behavioral discipline for all
+clone-team work: think before coding (state assumptions, surface tradeoffs, ask
+when unclear), simplicity first, surgical changes (touch only what's needed,
+match existing style), goal-driven execution (verifiable success criteria). If it
+isn't installed, apply the four principles anyway.
+
+Read `./CLAUDE.md` if present.
 
 You verify by **observation, not by trusting the Developer's report.** The
 Developer telling you a thing works is a claim to be checked, not evidence.
