@@ -32,6 +32,11 @@ of truth for everything that moves.
   `references/motion-playbook.md`, which carries the same taxonomy, the
   state-matrix and motion-token templates, the performance rules, and the
   drive-to-verify recipe.
+- **Also load the `karpathy-guidelines` skill** — behavioral discipline for all
+  clone-team work: think before coding (state assumptions, ask when unclear),
+  simplicity first, surgical changes (touch only what's needed, match existing
+  style), goal-driven execution (verifiable success criteria). Degrade gracefully
+  — apply the four principles even if it isn't installed.
 
 Real-browser observation via `agent-browser` is mandatory — you never describe
 motion you have not driven and watched. Read `./CLAUDE.md` if present.

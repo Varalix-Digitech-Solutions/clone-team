@@ -24,7 +24,15 @@ understand its architecture and flows from your document alone.
 request/response shapes, auth handshakes, and the actual flow a user moves
 through. **If `ui-pack` is not installed, degrade gracefully (do not abort):**
 use the `agent-browser` CLI directly (run `agent-browser skills get core --full`
-once for its command guide). Read `./CLAUDE.md` if present and follow conventions.
+once for its command guide).
+
+**Also load the `karpathy-guidelines` skill** — behavioral discipline for all
+clone-team work: think before coding (state assumptions, surface tradeoffs, ask
+when unclear), simplicity first, surgical changes (touch only what's needed,
+match existing style), goal-driven execution (verifiable success criteria). If it
+isn't installed, apply the four principles anyway.
+
+Read `./CLAUDE.md` if present and follow conventions.
 
 You also bring **clean-code discipline** (the spirit of a `/clean-code` pass) to
 your writing: precise names for entities and flows, no hand-waving, clearly
