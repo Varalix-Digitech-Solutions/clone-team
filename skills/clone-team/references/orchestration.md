@@ -73,6 +73,14 @@ Workflow, the human final regression, and the resume decisions.
 2. Read the five `agents/*.md` files and pass their bodies as
    `args.personas.{fe,motionAnalyst,motionDev,backend,tester}` — single source of
    truth, no drift.
+2.5. **Start the usage watchdog** (background Bash, zero tokens): `node
+   "<skill>/scripts/usage-watchdog.mjs" start --dir <proj>` with
+   `run_in_background: true`. It polls the account's 5-hour usage window every 5
+   minutes and writes `WRAP_UP` (soft stop, ≥80%) / `HARD_STOP` (≥90%) sentinels
+   that the agents' wrap-up protocol checks — the run drains gracefully with
+   handoff reports instead of dying mid-agent at a cutoff, and the Manager
+   auto-wakes on `resets_at`. Details in `references/state-and-resume.md` →
+   "Usage watchdog".
 3. Call the `Workflow` tool with `{ scriptPath: "<skill>/workflows/clone-build-loop.js", args: <the object above> }`.
    - Pass `args` as a **real JSON object**. The engine is hardened to also accept
      a **JSON string** (it `JSON.parse`s a string payload) — but never assume:
@@ -97,7 +105,11 @@ Workflow, the human final regression, and the resume decisions.
      never as output to keep.
 5. While it runs, you may watch progress with `/workflows`. When the notification
    arrives, read the structured return (sections passed/flagged, final verdict,
-   backend coverage) and proceed to Phase 3.
+   backend coverage). If `summary.drained` is set (or `summary.deferred` is
+   non-empty), the run wound down early on a **usage cutoff or API failure** — it
+   is not "done": report it, auto-schedule a `/clone-resume` for just after
+   `resets_at` (see `state-and-resume.md` → "Usage watchdog"), and the deferred
+   sections pick up from their handoffs. Otherwise proceed to Phase 3.
 
 > **Tuning principle.** This skill's purpose is a *reliable process*, not a
 > one-off artifact. If something good is produced by a fluke (e.g. a doc an agent

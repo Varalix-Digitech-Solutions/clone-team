@@ -210,6 +210,15 @@ switch (cmd) {
         changes.push(`${sec.name}: ${prev} -> built (file on disk, awaits Tester re-validation)`)
       }
     }
+    // Clear any stale usage-watchdog sentinels (WRAP_UP/HARD_STOP) left by the run
+    // that drained — otherwise the relaunched loop trips them immediately and
+    // defers all over again before the watchdog's next poll confirms the window
+    // actually reset. (The watchdog also self-clears once utilization drops below
+    // the warm threshold; this just makes the resume deterministic, not poll-timed.)
+    for (const name of ['WRAP_UP', 'HARD_STOP']) {
+      const p = path.join(stateDir, name)
+      if (fs.existsSync(p)) { fs.unlinkSync(p); changes.push(`cleared stale usage sentinel: ${name}`) }
+    }
     writeState(s)
     console.log(`reconciled ${stateFile}`)
     if (changes.length) changes.forEach(c => console.log('  ' + c))

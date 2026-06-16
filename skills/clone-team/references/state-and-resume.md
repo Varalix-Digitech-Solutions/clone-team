@@ -13,6 +13,57 @@ This is a first-class feature, not an afterthought. It rests on two pillars:
 The durable file is the source of truth. `resumeFromRunId` is an optimization on
 top of it. When they disagree, trust the disk.
 
+## Usage watchdog — soft stop / hard stop / auto-wake (graceful wind-down before a cutoff)
+
+A clone run is token-heavy and can outlast the account's **5-hour usage window**.
+Rather than let agents die mid-thought at the cutoff, `scripts/usage-watchdog.mjs`
+winds the team down *gracefully before* the limit hits. It polls the same endpoint
+the `/usage` screen reads (zero tokens, pure node — no model) and writes sentinel
+files into `.clone-team/` at two thresholds:
+
+| Sentinel | Default | Meaning for agents |
+|---|---|---|
+| `WRAP_UP` | ≥ 80% | **Soft stop.** Start no new major step; finish the current atomic step only if minutes from done; write a handoff report; return `wrappedUp: true`. |
+| `HARD_STOP` | ≥ 90% | **Hard stop.** Stop immediately, even mid-step; flush the handoff as-is; return `wrappedUp: true`. |
+
+The Manager launches it in the background at the top of Phase 2:
+
+```bash
+node "<SKILL_DIR>/scripts/usage-watchdog.mjs" start --dir <proj>   # run_in_background (poller)
+node "<SKILL_DIR>/scripts/usage-watchdog.mjs" check --dir <proj>   # one-shot poll (prints utilization + resets_at)
+node "<SKILL_DIR>/scripts/usage-watchdog.mjs" resets-at --dir <proj> # print resets_at for the auto-wake timer
+node "<SKILL_DIR>/scripts/usage-watchdog.mjs" clear --dir <proj>   # remove sentinels
+```
+
+**How the signal reaches the running team** (background agents are reachable only
+pull-based): every agent prompt carries a **wrap-up protocol** (injected into the
+shared CONTEXT by `workflows/clone-build-loop.js`, so it reaches every agent even
+when the Manager overrides a persona). Agents check for the sentinels at task
+start and between major steps — a free file-existence test. On a trip the agent
+writes `docs/research/components/<slug>.handoff.md` (TARGET / DONE / REMAINING /
+NEXT STEP / punch list), flushing all in-context findings to disk, and returns
+`wrappedUp: true`. The Workflow then **drains** (the `call()` wrapper): nothing new
+launches, in-flight sections return `status: 'deferred'`, assembly is skipped, and
+the run ends cleanly with `state.json` accurate (`summary.drained` +
+`summary.deferred` name what to resume). The same drain triggers if an agent dies
+on a terminal API error (`agent()` returns `null`), so an API outage also stops
+burning tokens instead of thrashing.
+
+**Auto-wake.** The sentinel files record `resets_at`. When a run drains, the
+Manager reads it (`resets-at`, or the `resetsAt` field in `.clone-team/HARD_STOP`)
+and sets a one-shot timer for just after that time — a scheduled `/clone-resume`
+(via `/schedule` or a cron). When the 5-hour window resets, the team relaunches
+from the handoffs automatically; no human needs to be watching the clock. If no
+scheduler is available, surface the reset time to the user so they can say
+"continue" then.
+
+A failed poll is logged and ignored (never treated as 0%); when utilization drops
+below the soft threshold (a new window) the watchdog clears the sentinels itself,
+and `state.mjs reconcile` also clears them on resume so a relaunched loop is never
+re-tripped by a stale file before the next poll. The endpoint is undocumented —
+if it ever changes shape, the watchdog degrades to logging errors and the run
+simply loses early warning (it still resumes durably from disk).
+
 ## `.clone-team/state.json` schema
 
 Write this from the very first Phase-0 answers, and update it whenever anything
@@ -165,11 +216,17 @@ Manager's Phase-3 final regression is the backstop that re-verifies everything.
 
 ## Recovery from a usage-limit cutoff (the worst case)
 
-This is why the durable file exists. If the session dies mid-run:
+This is why the durable file exists — and why the watchdog above front-runs it.
+The usage cutoff is now a **graceful wind-down**, not a crash: at ≥80%/≥90% the
+team flushes handoffs and the Workflow drains, then the Manager auto-schedules a
+`/clone-resume` for just after `resets_at`. But even if the session is killed
+outright (no graceful drain), nothing is lost:
 
-- Nothing approved is lost — done sections are on disk and marked `done`.
-- A new session starts the skill, the Manager runs `/clone-resume`, the durable
-  path kicks in, and only the unfinished sections rebuild.
+- Nothing approved is lost — done sections are on disk and marked `done`; a
+  drained section left a handoff its resumed agent continues from.
+- A new session starts the skill, the Manager runs `/clone-resume` (or the
+  auto-wake timer fires it), the durable path kicks in, and only the unfinished
+  sections rebuild.
 - The backend-doc track is idempotent too: if `ARCHITECTURE.md` exists and was
   marked complete, skip it; otherwise re-run the Architect.
 

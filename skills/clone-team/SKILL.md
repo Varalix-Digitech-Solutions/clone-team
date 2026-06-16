@@ -325,9 +325,21 @@ The loop, **per page** (pages build in parallel; a single-page site is one item)
    re-builds. Repeat until OK or the round cap is hit (then the page is flagged for
    your attention).
 
-Launch it with the `Workflow` tool, passing `state.json`'s requirements +
-section list + run-config as `args`. Personas are single-sourced: read the five
-agent files (`frontend-developer`, `interaction-motion-analyst`,
+**First, start the usage watchdog** (zero tokens, pure node — launch it BEFORE
+the Workflow): run `node "<SKILL_DIR>/scripts/usage-watchdog.mjs" start --dir
+"<projectDir>"` as a **background `Bash`** (`run_in_background: true`). It polls
+the account's 5-hour usage window every 5 minutes and, as the window nears its
+cap, drops sentinel files in `.clone-team/` — `WRAP_UP` (**soft stop, ≥80%**) and
+`HARD_STOP` (**hard stop, ≥90%**) — that every agent's wrap-up protocol checks
+between steps. The run then **drains gracefully** (agents finish/flush a handoff
+and return instead of dying mid-task at the cutoff) and the sentinel records
+`resets_at` so you can auto-resume when the window resets. See
+`references/state-and-resume.md` → "Usage watchdog". Defaults are tunable
+(`--warm`/`--hard`/`--interval`); leave them unless the user asks.
+
+Then launch the loop with the `Workflow` tool, passing `state.json`'s
+requirements + section list + run-config as `args`. Personas are single-sourced:
+read the five agent files (`frontend-developer`, `interaction-motion-analyst`,
 `motion-developer`, `backend-architect`, `tester`) and pass them in
 `args.personas.{fe, motionAnalyst, motionDev, backend, tester}` so the engine
 runs the canonical text (it embeds tight capsules as a fallback). Run the
@@ -401,6 +413,21 @@ cutoff in a *different* session. This is built in; see
   same-session via the Workflow's `resumeFromRunId`; cross-session by
   re-dispatching only the *not-done* sections (the durable, journal-independent
   path). Always prefer the durable path when in doubt.
+- **Usage cutoffs are handled proactively (soft/hard stop + auto-wake).** The
+  watchdog (started at Phase 2) trips a **soft stop at ≥80%** of the 5-hour
+  window — agents start no new major step, finish the current atomic one, write a
+  handoff, and return — and a **hard stop at ≥90%** — agents stop immediately and
+  flush the handoff as-is. The Workflow **drains**: in-flight sections come back
+  `deferred` (listed in the return's `summary.deferred`, with `summary.drained`
+  set), nothing approved is lost, and each deferred section left a handoff. **Then
+  auto-schedule the resume:** read the reset time —
+  `node "<SKILL_DIR>/scripts/usage-watchdog.mjs" resets-at --dir "<projectDir>"`
+  (or the `resetsAt` field inside `.clone-team/HARD_STOP`) — and set a one-shot
+  timer for just after it (`/schedule` a routine, or a cron) that fires
+  `/clone-resume`. When the window resets the team picks up from the handoffs
+  automatically. If no scheduler is available, tell the user the exact reset time
+  and that "continue" resumes. (`reconcile` clears the stale sentinels on resume,
+  so the relaunched loop isn't re-tripped before the watchdog's next poll.)
 
 If you ever come back to an existing clone project and the user just says
 "continue", treat it as `/clone-resume`.

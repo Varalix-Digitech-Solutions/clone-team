@@ -6,6 +6,32 @@ All notable changes to **clone-team** are recorded here. The format follows
 in `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json`; plugin
 installs update automatically when these bump.
 
+## [1.4.0]
+
+### Added
+- **Usage-window watchdog — graceful soft/hard stop + auto-wake on reset.** A new
+  zero-token poller, `scripts/usage-watchdog.mjs`, watches the account's 5-hour
+  usage window (the same endpoint `/usage` reads) and drops sentinel files in
+  `.clone-team/` as it nears the cap: `WRAP_UP` at **≥80%** (soft stop — agents
+  finish the current atomic step, write a handoff, return) and `HARD_STOP` at
+  **≥90%** (hard stop — stop immediately, flush the handoff as-is). The Manager
+  launches it as a background process at Phase 2; agents check the sentinels
+  between steps via a wrap-up protocol injected into every agent prompt. The
+  build Workflow then **drains** — in-flight sections return `deferred`, assembly
+  is skipped, and the return carries `summary.drained` + `summary.deferred` — so a
+  usage cutoff becomes a clean wind-down instead of agents dying mid-task. The
+  sentinels record `resets_at`, and the Manager **auto-schedules a `/clone-resume`**
+  for just after the window resets; deferred sections pick up from their
+  `*.handoff.md` files. The same drain fires when an agent dies on a terminal API
+  error, so an outage stops burning tokens too. Mirrors the mechanism proven in
+  the sibling `game-build-team` skill.
+
+### Changed
+- `scripts/state.mjs reconcile` now clears stale `WRAP_UP`/`HARD_STOP` sentinels
+  so a relaunched loop isn't immediately re-tripped before the watchdog's next
+  poll. `/clone-resume` restarts the watchdog (a resume is a fresh Workflow);
+  `/clone-status` surfaces an active cutoff and its reset time.
+
 ## [1.3.0]
 
 ### Added
@@ -70,6 +96,7 @@ installs update automatically when these bump.
   driven by a deterministic background Workflow with an unskippable test gate and
   first-class pause/resume/recovery.
 
+[1.4.0]: https://github.com/Varalix-Digitech-Solutions/clone-team/releases/tag/v1.4.0
 [1.3.0]: https://github.com/Varalix-Digitech-Solutions/clone-team/releases/tag/v1.3.0
 [1.2.0]: https://github.com/Varalix-Digitech-Solutions/clone-team/releases/tag/v1.2.0
 [1.1.0]: https://github.com/Varalix-Digitech-Solutions/clone-team/releases/tag/v1.1.0
