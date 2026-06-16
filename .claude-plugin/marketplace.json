@@ -6,14 +6,14 @@
   },
   "metadata": {
     "description": "Marketplace for the clone-team Claude Code skill.",
-    "version": "1.3.0"
+    "version": "1.4.0"
   },
   "plugins": [
     {
       "name": "clone-team",
       "source": "./",
       "description": "Clone any website with a team of AI agents — pixel-perfect UI clone plus reverse-engineered architecture docs. Built on Claude Code's dynamic Workflow engine with an unskippable test gate; fully pausable and resumable.",
-      "version": "1.3.0",
+      "version": "1.4.0",
       "license": "MIT",
       "homepage": "https://github.com/Varalix-Digitech-Solutions/clone-team",
       "category": "development",

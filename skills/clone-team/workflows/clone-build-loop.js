@@ -64,6 +64,11 @@ const visualDiffPath = A.visualDiffPath || '' // absolute path to scripts/visual
 const research = A.paths?.research || 'docs/research'
 const components = A.paths?.components || 'docs/research/components'
 const designRefs = A.paths?.designRefs || 'docs/design-references'
+// The usage-watchdog (scripts/usage-watchdog.mjs, launched by the Manager as a
+// zero-token background process) writes these sentinel files when the account's
+// 5-hour usage window nears its cap. Agents poll them between steps and wind down
+// gracefully (write a handoff, return wrappedUp:true) instead of dying mid-task.
+const sentinelDir = `${projectDir}/.clone-team`
 
 const cfg = A.runConfig || {}
 const maxRounds = Number.isFinite(cfg.maxRounds) ? cfg.maxRounds : 4
@@ -123,6 +128,20 @@ const UIANIM = `Also try to load the \`ui-animation\` skill (motion craft: CSS t
 
 const KARPATHY = `Also load the \`karpathy-guidelines\` skill — behavioral discipline for ALL clone-team work: THINK BEFORE CODING (state assumptions, surface tradeoffs, ask when unclear instead of guessing), SIMPLICITY FIRST (the minimum code that solves it — no speculative abstractions or unrequested flexibility), SURGICAL CHANGES (touch only what the task requires; match existing style; don't refactor what isn't broken), and GOAL-DRIVEN EXECUTION (define verifiable success criteria and loop until they pass). If it is NOT installed, apply the four principles from memory anyway.`
 
+// Usage wrap-up protocol — injected into the shared CONTEXT so EVERY agent gets
+// it, even when the Manager overrides a persona with the canonical agents/*.md
+// text. A background watchdog writes WRAP_UP/HARD_STOP sentinels as the 5-hour
+// usage window nears its cap; agents check them (a free file-existence test) and
+// wind down gracefully with a handoff instead of dying mid-task. The Workflow
+// then drains (see the `call()` wrapper below). This is what makes a usage cutoff
+// survivable without losing in-flight reasoning.
+const WRAPUP = `## Usage wrap-up protocol (MANDATORY — the account's 5-hour usage window may run out mid-run)
+A zero-token watchdog may drop sentinel files into \`${sentinelDir}\` when the usage window nears its cap. CHECK for them at the START of your task and again BETWEEN major steps — a free file-existence test: \`ls ${sentinelDir}/WRAP_UP ${sentinelDir}/HARD_STOP 2>/dev/null\`.
+- Sentinel ALREADY present when you START → do NO new work; return immediately with \`wrappedUp: true\` (fill the required result fields honestly: empty arrays, false build flags, a summary of "wrapped up before starting").
+- \`HARD_STOP\` appears mid-task → STOP immediately, even mid-step. Write your handoff NOW with whatever you have, then return \`wrappedUp: true\`.
+- \`WRAP_UP\` appears mid-task → start NO new major step. Finish the current atomic step only if it is minutes from done, write your handoff, then return \`wrappedUp: true\`.
+HANDOFF = write \`${components}/<your-task-slug>.handoff.md\` (use the section slug for section work; a task slug like \`final-regression\` / \`assemble\` / \`backend-architecture\` otherwise): TARGET (what you were asked to do), DONE (what is complete, with file paths), REMAINING (what is not), NEXT STEP (the exact first action for whoever resumes), plus any open punch list. Flush ALL in-context findings into it — anything not on disk is LOST at the cutoff. Then set \`wrappedUp: true\` and \`handoffPath\` in your structured result. When no sentinel is present, ignore all of this and work normally — \`wrappedUp\` defaults to false.`
+
 const FE_PERSONA = A.personas?.fe || `You are the FRONTEND DEVELOPER on a website-cloning team: a veteran frontend + UX engineer, the team's build machine. ${UIPACK} ${KARPATHY} You build pixel-perfect, behavior-accurate clones from a spec, extracting EXACT getComputedStyle values, real text, real downloaded assets, and every interaction state. You may spawn your own sub-builder agents for complex sections. You NEVER guess a value the spec should contain — if the spec is missing something, extract it from the live site yourself. You make the build and typecheck pass before reporting. You report back with full, honest notes (including anything you couldn't verify) so the Manager and Tester have complete context.`
 
 const TESTER_PERSONA = A.personas?.tester || `You are the TESTER on a website-cloning team — the most important quality gate, an expert in testing methodology AND UX. ${UIPACK} ${KARPATHY} You receive the goal and full context and you know exactly what the delivery must contain. You run a FULL REGRESSION every round, not a spot check: side-by-side visual diff against the ORIGINAL at 1440/768/390 via agent-browser, every interactive behavior (scroll/click/hover/time/responsive), and build/type checks. CRITICAL — you DO NOT stop at the first bug. Finish the ENTIRE regression in one pass and ACCUMULATE every defect you find (visual at all three viewports, every interaction/state, responsive reflow, content/asset mismatches, build/type errors). Never short-circuit and report a single issue back early — that wastes a whole expensive round; the Developer needs the COMPLETE punch list so they can fix everything at once. Note each issue as you go and keep testing. No bug, requirement mismatch, or undesirable UX detail escapes you. Only after the full sweep do you return a strict verdict: OK only if it is an exact copy with ZERO issues; otherwise NG with the FULL list of SPECIFIC, REPRODUCIBLE issues (where, expected vs actual, how to reproduce, screenshot ref), ordered by severity, that the Developer can act on directly.`
@@ -146,6 +165,8 @@ const SPEC_SCHEMA = {
     complexity: { type: 'string', enum: ['simple', 'moderate', 'complex'] },
     ready: { type: 'boolean', description: 'true if the spec is complete enough to build from with zero guessing' },
     notes: { type: 'string' },
+    wrappedUp: { type: 'boolean', description: 'true if you stopped early due to a WRAP_UP/HARD_STOP usage sentinel' },
+    handoffPath: { type: 'string', description: 'path to the handoff report written when wrapping up' },
   },
 }
 
@@ -160,6 +181,8 @@ const BUILD_SCHEMA = {
     summary: { type: 'string' },
     devNotes: { type: 'string', description: 'honest notes: what was done, what is uncertain, what was inferred' },
     openQuestions: { type: 'array', items: { type: 'string' } },
+    wrappedUp: { type: 'boolean', description: 'true if you stopped early due to a WRAP_UP/HARD_STOP usage sentinel' },
+    handoffPath: { type: 'string', description: 'path to the handoff report written when wrapping up' },
   },
 }
 
@@ -193,6 +216,8 @@ const VERDICT_SCHEMA = {
     // these just let the structured verdict echo what was recorded.
     roundNumber: { type: 'integer', description: 'the build round this verdict is for (1-based)' },
     metrics: { type: 'object', description: 'per-viewport { diffPixelRatio, ssim } from visual-diff.mjs, keyed by width (e.g. "1440")' },
+    wrappedUp: { type: 'boolean', description: 'true if you stopped early due to a WRAP_UP/HARD_STOP usage sentinel' },
+    handoffPath: { type: 'string', description: 'path to the handoff report written when wrapping up' },
   },
 }
 
@@ -204,6 +229,8 @@ const DOC_SCHEMA = {
     sectionsCovered: { type: 'array', items: { type: 'string' } },
     coverage: { type: 'string', enum: ['partial', 'substantial', 'complete'] },
     gaps: { type: 'array', items: { type: 'string' } },
+    wrappedUp: { type: 'boolean', description: 'true if you stopped early due to a WRAP_UP/HARD_STOP usage sentinel' },
+    handoffPath: { type: 'string', description: 'path to the handoff report written when wrapping up' },
   },
 }
 
@@ -223,6 +250,8 @@ const MOTION_SCHEMA = {
     reducedMotionNoted: { type: 'boolean' },
     ready: { type: 'boolean', description: 'true only if every behavior can be built from this spec with ZERO guessing' },
     notes: { type: 'string' },
+    wrappedUp: { type: 'boolean', description: 'true if you stopped early due to a WRAP_UP/HARD_STOP usage sentinel' },
+    handoffPath: { type: 'string', description: 'path to the handoff report written when wrapping up' },
   },
 }
 
@@ -236,7 +265,9 @@ const CONTEXT = `## Shared context
 - PROJECT DIR: ${projectDir}
 - ${credsLine}
 - App insights: ${appInsights}
-- Research dir: ${research} | Component specs: ${components} | Design refs: ${designRefs}${skillDir ? `\n- Clone-team skill dir: ${skillDir} (extraction scripts + spec template in ${skillDir}/references/extraction-playbook.md; durable state CLI at ${skillDir}/scripts/state.mjs)` : ''}${leanResources ? `\n- RESOURCE BUDGET (host is memory-constrained; systemd-oomd kills the whole session on sustained pressure): keep AT MOST ONE agent-browser session alive at a time. Reuse a single NAMED session (\`agent-browser --session <slug> ...\`) instead of opening new browsers, and CLOSE it (\`agent-browser close --all\`) the moment you're done — especially BEFORE running \`npm run build\`/vite (each browser is ~4GB). Do NOT spawn sub-builder agents that drive their own browser; build sub-components yourself within the one session. To compare ORIGINAL vs CLONE, do it SEQUENTIALLY in the one session (screenshot the original, navigate to the clone, screenshot it, then diff the images) — never two live browsers at once. Going over budget gets the entire run OOM-killed — staying lean is mandatory, not optional.` : ''}`
+- Research dir: ${research} | Component specs: ${components} | Design refs: ${designRefs}${skillDir ? `\n- Clone-team skill dir: ${skillDir} (extraction scripts + spec template in ${skillDir}/references/extraction-playbook.md; durable state CLI at ${skillDir}/scripts/state.mjs)` : ''}${leanResources ? `\n- RESOURCE BUDGET (host is memory-constrained; systemd-oomd kills the whole session on sustained pressure): keep AT MOST ONE agent-browser session alive at a time. Reuse a single NAMED session (\`agent-browser --session <slug> ...\`) instead of opening new browsers, and CLOSE it (\`agent-browser close --all\`) the moment you're done — especially BEFORE running \`npm run build\`/vite (each browser is ~4GB). Do NOT spawn sub-builder agents that drive their own browser; build sub-components yourself within the one session. To compare ORIGINAL vs CLONE, do it SEQUENTIALLY in the one session (screenshot the original, navigate to the clone, screenshot it, then diff the images) — never two live browsers at once. Going over budget gets the entire run OOM-killed — staying lean is mandatory, not optional.` : ''}
+
+${WRAPUP}`
 
 const specPrompt = (s) => `${FE_PERSONA}
 
@@ -322,11 +353,37 @@ Open the ORIGINAL and the assembled CLONE side by side via agent-browser. Walk t
 
 log(`clone-team loop starting: ${sections.length} section(s), tier=${cfg.modelTier || 'max-fidelity'}, maxRounds=${maxRounds}`)
 
+// --- Graceful drain ----------------------------------------------------------
+// Once any agent reports wrappedUp (a usage-watchdog WRAP_UP/HARD_STOP sentinel)
+// or dies on a terminal API error (agent() returns null after retries), the run
+// DRAINS: nothing new launches, in-flight sections return status 'deferred', and
+// the result lists what to resume. State on disk stays accurate — done sections
+// were durably marked by the Tester gate; wrapped agents left handoff reports.
+// This is what turns a usage-limit cutoff from "agents die mid-thought" into a
+// clean wind-down the Manager can resume (and auto-wake on, via resets_at).
+let draining = false // false | 'usage-wrap-up' | 'api-failure'
+
+async function call(prompt, opts) {
+  if (draining) return null
+  const r = await agent(prompt, opts)
+  if (r === null) {
+    draining = draining || 'api-failure'
+    log(`DRAIN: agent ${opts?.label || '(unlabeled)'} returned null (terminal API error) — deferring all remaining work`)
+  } else if (r.wrappedUp) {
+    draining = draining || 'usage-wrap-up'
+    log(`DRAIN: agent ${opts?.label || '(unlabeled)'} wrapped up on a usage sentinel${r.handoffPath ? ` (handoff: ${r.handoffPath})` : ''} — deferring all remaining work`)
+  }
+  return r
+}
+
+const deferred = (section, rounds, extra) => ({ section: section.name, status: 'deferred', reason: draining || 'wrap-up', rounds: rounds || 0, ...extra })
+
 async function buildAndVerify(section, idx) {
   if (section.status === 'done') {
     log(`skip (already done): ${section.name}`)
     return { section: section.name, status: 'done', rounds: 0, cached: true }
   }
+  if (draining) { log(`deferred (draining): ${section.name}`); return deferred(section, 0) }
 
   // Step 1: extract + spec (skip if the Manager already wrote one).
   // Note: agents carry an explicit `phase:` in opts — we deliberately do NOT
@@ -334,7 +391,8 @@ async function buildAndVerify(section, idx) {
   // sections and the global phase state would race.
   let spec = section.specPath ? { specPath: section.specPath, sectionName: section.name } : null
   if (!spec) {
-    spec = await agent(specPrompt(section), { label: `spec:${section.name}`, phase: 'Spec & Build', schema: SPEC_SCHEMA, model: M.extract })
+    spec = await call(specPrompt(section), { label: `spec:${section.name}`, phase: 'Spec & Build', schema: SPEC_SCHEMA, model: M.extract })
+    if (!spec || spec.wrappedUp) return deferred(section, 0, { handoffPath: spec?.handoffPath })
   }
 
   // Step 1.5: MOTION ANALYSIS — author the motion spec ONCE per section (the
@@ -342,7 +400,8 @@ async function buildAndVerify(section, idx) {
   // and the Tester gates against). Resumable: skip if the Manager pre-wrote one.
   let motion = section.motionPath ? { motionPath: section.motionPath } : null
   if (!motion) {
-    motion = await agent(motionAnalysisPrompt(section, spec), { label: `motion-analyze:${section.name}`, phase: 'Motion', schema: MOTION_SCHEMA, model: M.motion })
+    motion = await call(motionAnalysisPrompt(section, spec), { label: `motion-analyze:${section.name}`, phase: 'Motion', schema: MOTION_SCHEMA, model: M.motion })
+    if (!motion || motion.wrappedUp) return deferred(section, 0, { spec, handoffPath: motion?.handoffPath })
   }
 
   let round = 0, verdict = null, lastBuild = null
@@ -354,10 +413,11 @@ async function buildAndVerify(section, idx) {
   // Test the existing build; only enter the fix loop if it comes back NG (and
   // seed that loop with the verdict so round 1 is a targeted fix, not a rewrite).
   if (section.status === 'built') {
-    verdict = await agent(
+    verdict = await call(
       testPrompt(section, spec, { summary: 'pre-existing build from a prior run — re-validating before any rebuild', filesWritten: section.targetFile ? [section.targetFile] : [] }),
       { label: `revalidate:${section.name}`, phase: 'Regression', schema: VERDICT_SCHEMA, model: M.tester }
     )
+    if (!verdict || verdict.wrappedUp) return deferred(section, 0, { spec, handoffPath: verdict?.handoffPath })
     if (verdict.verdict === 'OK') {
       log(`OK ${section.name} (re-validated existing build — 0 build rounds)`)
       return { section: section.name, status: 'pass', rounds: 0, spec, build: null, verdict, revalidated: true }
@@ -368,13 +428,16 @@ async function buildAndVerify(section, idx) {
   // Steps 2-4: develop -> full-regression-test -> fix, until OK or cap.
   while (round < maxRounds) {
     round++
-    lastBuild = await agent(devPrompt(section, spec, verdict, lastBuild), { label: `dev:${section.name}#${round}`, phase: 'Spec & Build', schema: BUILD_SCHEMA, model: M.dev })
+    lastBuild = await call(devPrompt(section, spec, verdict, lastBuild), { label: `dev:${section.name}#${round}`, phase: 'Spec & Build', schema: BUILD_SCHEMA, model: M.dev })
+    if (!lastBuild || lastBuild.wrappedUp) return deferred(section, round, { spec, handoffPath: lastBuild?.handoffPath })
     // MOTION pass: a sequential specialist edit of the SAME file, right after the
     // FE build and BEFORE the gate — so motion is always the last writer and
     // survives FE fix rounds (the FE dev may rebuild structure each round; the
     // Motion Developer re-applies/repairs motion on top every time).
-    await agent(motionDevPrompt(section, spec, motion, verdict, lastBuild), { label: `motion-dev:${section.name}#${round}`, phase: 'Motion', schema: BUILD_SCHEMA, model: M.motion })
-    verdict = await agent(testPrompt(section, spec, lastBuild), { label: `test:${section.name}#${round}`, phase: 'Regression', schema: VERDICT_SCHEMA, model: M.tester })
+    const motionDev = await call(motionDevPrompt(section, spec, motion, verdict, lastBuild), { label: `motion-dev:${section.name}#${round}`, phase: 'Motion', schema: BUILD_SCHEMA, model: M.motion })
+    if (!motionDev || motionDev.wrappedUp) return deferred(section, round, { spec, handoffPath: motionDev?.handoffPath })
+    verdict = await call(testPrompt(section, spec, lastBuild), { label: `test:${section.name}#${round}`, phase: 'Regression', schema: VERDICT_SCHEMA, model: M.tester })
+    if (!verdict || verdict.wrappedUp) return deferred(section, round, { spec, handoffPath: verdict?.handoffPath })
     if (verdict.verdict === 'OK') {
       log(`OK ${section.name} (round ${round})`)
       return { section: section.name, status: 'pass', rounds: round, spec, build: lastBuild, verdict }
@@ -391,7 +454,7 @@ async function buildAndVerify(section, idx) {
 // browsers and the run gets OOM-killed. serialBackend enforces that.
 const runBackend = () => backendDepth === 'none'
   ? Promise.resolve(null)
-  : agent(backendPrompt(), { label: 'backend-architect', phase: 'Backend Docs', schema: DOC_SCHEMA, model: M.backend })
+  : call(backendPrompt(), { label: 'backend-architect', phase: 'Backend Docs', schema: DOC_SCHEMA, model: M.backend })
 
 // Sections build in WAVES of `waveSize` (each section runs its own enforced
 // dev/tester loop). Waves run sequentially; within a wave, sections are parallel.
@@ -421,20 +484,28 @@ if (serialBackend) {
 
 const passed = sectionResults.filter(r => r && (r.status === 'pass' || r.status === 'done'))
 const flagged = sectionResults.filter(r => r && r.status === 'flagged')
-log(`sections complete: ${passed.length} passed, ${flagged.length} flagged`)
+const deferredSections = sectionResults.filter(r => r && r.status === 'deferred')
+log(`sections complete: ${passed.length} passed, ${flagged.length} flagged${deferredSections.length ? `, ${deferredSections.length} deferred (${draining || 'wrap-up'})` : ''}`)
 
 // Assemble -> final regression -> fix (enforced). Run ONLY when at least one
 // section actually passed AND nothing is still flagged. The `passed.length > 0`
 // guard is deliberate: assembling with zero built sections is never a valid
 // "done" — it is a misfire, and must not reach the final-regression gate.
+// When the run is DRAINING (usage cutoff / API failure), skip assembly entirely:
+// the page is incomplete by definition and assembling a partial page would burn
+// the very tokens the drain is trying to preserve. The Manager assembles on resume.
 let finalVerdict = null, finalRound = 0, assembly = null
-if (skipAssembly) {
+if (draining) {
+  log(`Assembly skipped — run is draining (${draining}). ${deferredSections.length} section(s) deferred; resume from handoffs after the usage window resets.`)
+} else if (skipAssembly) {
   log(`Assembly skipped (buildOnly): ${passed.length} section(s) passed, ${flagged.length} flagged. The Manager assembles + final-regresses in Phase 3.`)
 } else if (passed.length > 0 && flagged.length === 0) {
   while (finalRound < finalCap) {
     finalRound++
-    assembly = await agent(assemblePrompt(sectionResults, finalVerdict, finalRound), { label: `assemble#${finalRound}`, phase: 'Assemble & Final Regression', schema: BUILD_SCHEMA, model: M.dev })
-    finalVerdict = await agent(finalRegressionPrompt(finalRound), { label: `final-regression#${finalRound}`, phase: 'Assemble & Final Regression', schema: VERDICT_SCHEMA, model: M.tester })
+    assembly = await call(assemblePrompt(sectionResults, finalVerdict, finalRound), { label: `assemble#${finalRound}`, phase: 'Assemble & Final Regression', schema: BUILD_SCHEMA, model: M.dev })
+    if (!assembly || assembly.wrappedUp) { log(`Assembly deferred — run draining (${draining || 'wrap-up'})`); break }
+    finalVerdict = await call(finalRegressionPrompt(finalRound), { label: `final-regression#${finalRound}`, phase: 'Assemble & Final Regression', schema: VERDICT_SCHEMA, model: M.tester })
+    if (!finalVerdict || finalVerdict.wrappedUp) { finalVerdict = null; log(`Final regression deferred — run draining (${draining || 'wrap-up'})`); break }
     if (finalVerdict.verdict === 'OK') { log('FINAL REGRESSION: OK'); break }
     log(`FINAL REGRESSION round ${finalRound}: NG (${(finalVerdict.issues || []).length} issue(s))`)
   }
@@ -449,6 +520,8 @@ return {
     sections: sectionResults.length,
     passed: passed.length,
     flagged: flagged.map(f => f.section),
+    deferred: deferredSections.map(f => f.section),
+    drained: draining || false,
     finalVerdict: finalVerdict?.verdict || 'not-run',
     backendCoverage: backendDoc?.coverage || (backendDepth === 'none' ? 'skipped' : 'unknown'),
   },

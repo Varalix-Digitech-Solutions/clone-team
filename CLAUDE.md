@@ -55,6 +55,7 @@ references/
 scripts/
   state.mjs                       # durable state CLI (init/status/mark-section/remaining/…)
   capacity.mjs                    # host-capacity probe -> recommended waveSize (check before launch)
+  usage-watchdog.mjs              # zero-token 5h-usage-window poller -> WRAP_UP(≥80%)/HARD_STOP(≥90%) sentinels (graceful soft/hard stop + auto-wake)
   install-deps.sh                 # idempotent dep bootstrap: agent-browser CLI + companion skills (run at Preflight)
 vendor/
   ui-pack/SKILL.md                # the vendored ui-pack wrapper skill (installer copies it to ~/.claude/skills)
@@ -109,6 +110,18 @@ evals/
   AND its `targetFile` exists. `state.mjs remaining` reconciles state with disk —
   that reconciliation is what makes cutoffs survivable. Don't add a code path
   that marks `done` without the file existing.
+- **Usage cutoffs wind down gracefully, never crash.** `scripts/usage-watchdog.mjs`
+  (zero-token poller of the 5h usage window, launched by the Manager at Phase 2)
+  writes `WRAP_UP` (≥80%, soft stop) / `HARD_STOP` (≥90%, hard stop) sentinels into
+  `.clone-team/`. The wrap-up protocol is injected into **every** agent prompt via
+  the Workflow's shared `CONTEXT` (one source — don't duplicate it into the persona
+  files; the sentinel path is runtime-derived). On a trip, agents flush a handoff
+  and return `wrappedUp: true`; the Workflow's `call()` wrapper then **drains**
+  (in-flight sections → `deferred`, assembly skipped, `summary.drained` set). The
+  same drain fires when `agent()` returns `null` (terminal API error). The Manager
+  auto-wakes a `/clone-resume` at the sentinel's `resets_at`. Don't remove the
+  drain, mark a drained section `done`, or let the loop keep launching new agents
+  after a wrap-up — that reintroduces the mid-thought death this prevents.
 - **Model tier is user-chosen**, defaulting to `max-fidelity` (Opus for
   Manager/Dev/Tester). Never hard-code a tier — offer it at Phase 0.
 - **Credentials** live in the gitignored `.clone-team/creds.local.json`; agents
