@@ -6,6 +6,24 @@ All notable changes to **clone-team** are recorded here. The format follows
 in `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json`; plugin
 installs update automatically when these bump.
 
+## [1.4.1]
+
+### Fixed
+- **Usage watchdog now works on macOS (and stays OS-agnostic).** The watchdog
+  authenticates to the usage endpoint with Claude Code's login token, but that
+  token lives in a different place per OS. On macOS the live token is in the login
+  **Keychain** (`Claude Code-credentials`); the on-disk
+  `~/.claude/.credentials.json` is a frequently-stale copy whose token expires
+  while the Keychain stays current — so the watchdog was reading the wrong vault
+  and getting `HTTP 401`, silently disabling the proactive soft/hard-stop on every
+  Mac. `readToken()` now reads the Keychain first on macOS (via `security
+  find-generic-password`; the token is never written to disk), and falls back to
+  the on-disk file on Linux/Windows or if the Keychain entry is missing. One code
+  path, no per-client setup, no separate installer — the watchdog just works
+  everywhere. The durability layer (per-section disk checkpoint) was never
+  affected; this restores the *proactive* wind-down that was effectively
+  Mac-broken.
+
 ## [1.4.0]
 
 ### Added
@@ -96,6 +114,7 @@ installs update automatically when these bump.
   driven by a deterministic background Workflow with an unskippable test gate and
   first-class pause/resume/recovery.
 
+[1.4.1]: https://github.com/Varalix-Digitech-Solutions/clone-team/releases/tag/v1.4.1
 [1.4.0]: https://github.com/Varalix-Digitech-Solutions/clone-team/releases/tag/v1.4.0
 [1.3.0]: https://github.com/Varalix-Digitech-Solutions/clone-team/releases/tag/v1.3.0
 [1.2.0]: https://github.com/Varalix-Digitech-Solutions/clone-team/releases/tag/v1.2.0
