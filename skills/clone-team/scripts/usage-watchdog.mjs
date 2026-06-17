@@ -28,6 +28,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import os from 'node:os'
+import { execFileSync } from 'node:child_process'
 
 const USAGE_URL = 'https://api.anthropic.com/api/oauth/usage'
 
@@ -55,12 +56,31 @@ const intervalSec = Number(args.interval) || 300
 
 const sentinel = (name) => path.join(stateDir, name)
 
-function readToken() {
-  const credFile = path.join(os.homedir(), '.claude', '.credentials.json')
-  const creds = JSON.parse(fs.readFileSync(credFile, 'utf8'))
-  const token = creds?.claudeAiOauth?.accessToken
-  if (!token) throw new Error('no claudeAiOauth.accessToken in ~/.claude/.credentials.json')
+function tokenFromBlob(blob) {
+  const token = JSON.parse(blob)?.claudeAiOauth?.accessToken
+  if (!token) throw new Error('no claudeAiOauth.accessToken in credentials blob')
   return token
+}
+
+function readToken() {
+  // Credential source is OS-specific because each OS stores Claude Code's login
+  // token in a different vault — there is no one path that works everywhere.
+  // macOS: the LIVE token lives in the login Keychain ("Claude Code-credentials");
+  // the on-disk ~/.claude/.credentials.json is frequently a STALE copy whose token
+  // has expired while the Keychain stays current, so reading the file there yields
+  // 401s. Read the Keychain first on macOS; the token is never written anywhere —
+  // we just read from the right vault. Linux/Windows (and macOS as a fallback if
+  // the Keychain entry is missing) use the on-disk file.
+  if (process.platform === 'darwin') {
+    try {
+      const blob = execFileSync('security',
+        ['find-generic-password', '-s', 'Claude Code-credentials', '-w'],
+        { encoding: 'utf8' })
+      return tokenFromBlob(blob.trim())
+    } catch { /* fall through to the on-disk file */ }
+  }
+  const credFile = path.join(os.homedir(), '.claude', '.credentials.json')
+  return tokenFromBlob(fs.readFileSync(credFile, 'utf8'))
 }
 
 async function fetchUsage() {
